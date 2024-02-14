@@ -13,5 +13,5 @@ Long term features:
  - [ ] Reminders on the webpage
  - [ ] A recurring list of items you need each lesson on the webpage
 
-What am I working on right now?
+### What am I working on right now?
 Getting the Flask (I have no idea how to use Django) web server to run the basic website
