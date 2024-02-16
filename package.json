@@ -1,0 +1,16 @@
+{
+  "name": "better-sentral",
+  "version": "1.0.0",
+  "description": "Sentral has been updated, and I hate it. It looks bad, and horrible, so I'm just going to make my own webpage.",
+  "main": "index.js",
+  "scripts": {
+    "buildcss": "npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "tailwindcss": "^3.4.1"
+  }
+}
