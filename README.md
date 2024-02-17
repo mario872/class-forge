@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # better-sentral
 Sentral has been updated, and I hate it. It looks bad, and horrible, so I'm just going to make my own webpage.
 
@@ -34,4 +33,3 @@ Long term features:
 
 ### What am I working on right now?
 Getting the Flask (I have no idea how to use Django) web server to run the basic website
->>>>>>> Stashed changes
