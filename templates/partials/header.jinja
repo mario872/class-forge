@@ -7,7 +7,7 @@
       <div class="flex h-16 items-center justify-between">
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <img class="h-8 w-8 rounded-full" src="{{url_for('static', filename='Sentralify 2 - Background.jpeg')}}" alt="Your Company">
+            <img class="h-8 w-8 rounded-full" src="{{url_for('static', filename='Sentralify 2 - Background.png')}}" alt="Sentralify">
           </div>
           <div class="hidden md:block">
             <div class="ml-10 flex items-baseline space-x-4">
@@ -69,8 +69,8 @@
             <img class="h-10 w-10 rounded-full" src="{{ user['photo_path'] }}" alt="">
           </div>
           <div class="ml-3">
-            <div class="text-base font-medium leading-none text-white">Tom Cook</div>
-            <div class="text-sm font-medium leading-none text-gray-400">tom@example.com</div>
+            <div class="text-base font-medium leading-none text-white">{{ user['username'].split('.')[0].capitalize() + ' ' + user['username'].split('.')[1].capitalize()}}</div>
+            <div class="text-sm font-medium leading-none text-gray-400">{{ user['username'] + '@education.' + user['state'] + '.gov.au' }}</div>
           </div>
         </div>
       </div>

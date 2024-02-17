@@ -5,13 +5,15 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from binascii import hexlify
 import os
+import random
+
+fake_user = {'username': 'Your Name',
+             'password': 'your_password',
+             'photo_path': 'https://img.apmcdn.org/768cb350c59023919f564341090e3eea4970388c/square/72dd92-20180309-rick-astley.jpg'}
 
 app = Flask(__name__)
 
 def decrypt(in_, private_key, test=None):
-    print(f'PRIVATE KEY IN DECRYPT IS {private_key}')
-    print(f'ENCODED PRIVATE KEY IN DECRYPT IS {private_key.encode()}')
-
     private_key = RSA.import_key(private_key.encode())
     
     decrypter = PKCS1_OAEP.new(key=private_key)
@@ -19,33 +21,50 @@ def decrypt(in_, private_key, test=None):
     if test != None:
         print(decrypter.decrypt(test.encode(encoding='latin')))
     
-    print(f'IN is of type {type(in_)}')
-    
     if type(in_) == dict:
         out = {}
-        print('Now it is ' + str(private_key) + '\nType is ' + str(type(private_key)))
         keys = list(in_.keys())
         for key in keys:
-            print('Key is ' + str(key))
             if key != 'photo_path':
                 out[key] = decrypter.decrypt(in_[key].encode(encoding='latin')).decode(encoding='latin')
+            else:
+                out[key] = in_[key]
     elif type(in_) == str:
         out = decrypter.decrypt(in_.encode(encoding='latin')).decode(encoding='latin')
     
     return out
 
-@app.route('/')
-def one():
+def cookies_present(request):
     username = request.cookies.get('username')
     password = request.cookies.get('password')
-    if username == None or password == None:
-        return redirect('/login')
+    if username != None or password != None:
+        return True
     else:
-        return redirect('/dashboard')
+        return False
+    
+def load_user_config(request):
+    with open(f'users/{request.cookies.get("username")}/config.json', 'r') as user_config_file:
+        user = json.load(user_config_file)
+        
+    user = decrypt(user, request.cookies.get('private_key'), test=user['username'])
+    
+    try:
+        open(user['photo_path'], 'r').close()
+    except FileNotFoundError:
+        user['photo_path'] = 'static/unsplash/' + random.choice(os.listdir('static/unsplash/'))
+    
+    return user
 
+@app.route('/')
+def one():
+    if cookies_present(request):
+        return redirect('/dashboard')
+    else:
+        return redirect('/login')
+    
 @app.route('/login')
 def login():
-    return render_template('login.jinja')
+    return render_template('login.jinja', user=fake_user)
 
 @app.route('/login/finish', methods=['POST'])
 def finish_login():
@@ -86,7 +105,6 @@ def finish_login():
             
         response = make_response(render_template('login_complete.jinja', user=user_config))
         response.set_cookie('username', data['username'], secure=True)
-        print(f'PRIVATE KEY IS {private_key.export_key().decode()}')
         response.set_cookie('private_key', private_key.export_key().decode(), secure=True)
             
         return response
@@ -95,23 +113,39 @@ def finish_login():
         return redirect('/login')
 
 @app.route('/dashboard')
-def home():
-    with open(f'users/{request.cookies.get("username")}/config.json', 'r') as user_config_file:
-        user = json.load(user_config_file)
-        
-    user = decrypt(user, request.cookies.get('private_key'), test=user['username'])
+def home():    
+    if not cookies_present(request):
+        return redirect('/login')
+    
+    user = load_user_config(request)
+    
     return render_template('index.jinja', user=user)
 
 @app.route('/timetable')
 def timetable():
-    return render_template('timetable.jinja')
+    if not cookies_present(request):
+        return redirect('/login')
+    
+    user = load_user_config(request)
+    
+    return render_template('timetable.jinja', user=user)
 
 @app.route('/notice')
-def notice():
-    return render_template('notices.jinja')
+def notices():
+    if not cookies_present(request):
+        return redirect('/login')
+    
+    user = load_user_config(request)
+    
+    return render_template('notices.jinja', user=user)
 
 @app.route('/calendar')
 def calendar():
-    return render_template('calendar.jinja')
+    if not cookies_present(request):
+        return redirect('/login')
+    
+    user = load_user_config(request)
+    
+    return render_template('calendar.jinja', user=user)
 
 app.run('127.0.0.1', 5000)
