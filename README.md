@@ -12,6 +12,7 @@ Soon to be features:
 Long term features:
  - [ ] Reminders on the webpage
  - [ ] A recurring list of items you need each lesson on the webpage
+ - [ ] Be able to upload your own profile photo
 
 ### What am I working on right now?
 Designing the dashboard
