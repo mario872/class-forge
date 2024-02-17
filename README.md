@@ -7,7 +7,7 @@ Soon to be features:
  - [ ] See attendance
  - [ ] See activities
  - [ ] See awards
- - [ ] Use Encryption to store passwords (see, I thought about this!)
+ - [x] Use Encryption to store passwords (see, I thought about this!)
 
 Long term features:
  - [ ] Reminders on the webpage
