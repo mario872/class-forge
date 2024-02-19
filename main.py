@@ -7,8 +7,10 @@ from binascii import hexlify
 import os
 import random
 
-fake_user = {'username': 'Your Name',
+fake_user = {'username': 'your.name',
              'password': 'your_password',
+             'state': 'nsw',
+             'base_ur': 'caringbahhs',
              'photo_path': 'https://img.apmcdn.org/768cb350c59023919f564341090e3eea4970388c/square/72dd92-20180309-rick-astley.jpg'}
 
 app = Flask(__name__)
@@ -103,7 +105,7 @@ def finish_login():
         with open(f'users/{user["username"]}/config.json', 'w') as user_config:
             json.dump(encrypted_user, user_config)
             
-        response = make_response(render_template('login_complete.jinja', user=user_config))
+        response = make_response(render_template('login_complete.jinja', user=fake_user))
         response.set_cookie('username', data['username'], secure=True)
         response.set_cookie('private_key', private_key.export_key().decode(), secure=True)
             
@@ -147,5 +149,19 @@ def calendar():
     user = load_user_config(request)
     
     return render_template('calendar.jinja', user=user)
+
+@app.route('/reload')
+def reload():
+    if not cookies_present(request):
+        return redirect('/login')
+    
+    user = load_user_config(request)
+    
+    user['headless'] = False
+    
+    data = sentralify(user)
+    
+    return render_template('index.jinja', user=user, data=data)
+    
 
 app.run('127.0.0.1', 5000)

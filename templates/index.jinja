@@ -10,10 +10,8 @@
 </head>
 <body>
 <!-- Start of index.jinja -->
-    <p>Username is {{ user['username'] }}</p>
-    <p>Password is {{ user['password'] }}</p>
-    <p>School is {{ user['base_url'] }}</p>
-    <p>State is {{ user['state'] }}</p>
+    <p>Data is: </p>
+    <p>{{ data }}</p>
 <!-- End of index.jinja -->
 {% include 'partials/footer.jinja' with context %}
 </body>
