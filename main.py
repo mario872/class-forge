@@ -6,6 +6,8 @@ from Crypto.PublicKey import RSA
 from binascii import hexlify
 import os
 import random
+import markdown # pip install markdown
+from bs4 import BeautifulSoup # pip install beautifulsoup4
 
 fake_user = {'username': 'your.name',
              'password': 'your_password',
@@ -15,13 +17,22 @@ fake_user = {'username': 'your.name',
 
 app = Flask(__name__)
 
+
+def md_to_text(md):
+    html = markdown.markdown(md)
+    soup = BeautifulSoup(html, features='html.parser')
+    return soup.get_text()
+
 def decrypt(in_, private_key, test=None):
     private_key = RSA.import_key(private_key.encode())
     
     decrypter = PKCS1_OAEP.new(key=private_key)
     
     if test != None:
-        print(decrypter.decrypt(test.encode(encoding='latin')))
+        try:
+            print(decrypter.decrypt(test.encode(encoding='latin')))
+        except ValueError:
+            return False
     
     if type(in_) == dict:
         out = {}
@@ -49,6 +60,8 @@ def load_user_config(request):
         user = json.load(user_config_file)
         
     user = decrypt(user, request.cookies.get('private_key'), test=user['username'])
+    if user == False:
+        return False
     
     try:
         open(user['photo_path'], 'r').close()
@@ -56,6 +69,12 @@ def load_user_config(request):
         user['photo_path'] = 'static/unsplash/' + random.choice(os.listdir('static/unsplash/'))
     
     return user
+
+def load_user_data(user):
+    with open(f'users/{user["username"]}/data.json', 'r') as data_json:
+        data = json.load(data_json)
+
+    return data
 
 @app.route('/')
 def one():
@@ -121,7 +140,14 @@ def home():
     
     user = load_user_config(request)
     
-    return render_template('index.jinja', user=user)
+    if not user:
+        return redirect('/login')
+    
+    data = load_user_data(user)
+    
+    lorem_ipsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed volutpat libero volutpat purus condimentum pellentesque. Donec lobortis ipsum et lacus facilisis tempor. Curabitur efficitur velit eget enim tincidunt ullamcorper. Donec ornare purus quis lacinia ultricies. Morbi fringilla dolor non ex laoreet, a rutrum ipsum bibendum. '
+    
+    return render_template('index.jinja', user=user, data=data, lorem_ipsum=lorem_ipsum)
 
 @app.route('/timetable')
 def timetable():
@@ -130,14 +156,20 @@ def timetable():
     
     user = load_user_config(request)
     
+    if not user:
+        return redirect('/login')
+    
     return render_template('timetable.jinja', user=user)
 
-@app.route('/notice')
+@app.route('/notices')
 def notices():
     if not cookies_present(request):
         return redirect('/login')
     
     user = load_user_config(request)
+    
+    if not user:
+        return redirect('/login')
     
     return render_template('notices.jinja', user=user)
 
@@ -148,6 +180,9 @@ def calendar():
     
     user = load_user_config(request)
     
+    if not user:
+        return redirect('/login')
+    
     return render_template('calendar.jinja', user=user)
 
 @app.route('/reload')
@@ -157,11 +192,24 @@ def reload():
     
     user = load_user_config(request)
     
+    if not user:
+        return redirect('/login')
+    
     user['headless'] = False
     
     data = sentralify(user)
     
-    return render_template('index.jinja', user=user, data=data)
+    for notice in data['notices']:
+        try:
+            notice['text'] = md_to_text(notice['text'])
+        except KeyError:
+            pass
+    
+    with open(f'users/{user["username"]}/data.json', 'w') as data_json:
+        json.dump(data, data_json)
+    
+    return redirect('/dashboard')
     
 
-app.run('127.0.0.1', 5000)
+#app.config['SESSION_COOKIE_DOMAIN'] = 'jimmyscompany.top'
+app.run('0.0.0.0', 5000)
