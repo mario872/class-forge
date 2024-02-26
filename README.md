@@ -2,8 +2,8 @@
 Sentral has been updated, and I hate it. It looks bad, and horrible, so I'm just going to make my own webpage.
 
 Soon to be features:
- - [ ] See your timetable
- - [ ] See daily notices
+ - [x] See your timetable
+ - [x] See daily notices
  - [ ] See attendance
  - [ ] See activities
  - [ ] See awards
@@ -15,4 +15,4 @@ Long term features:
  - [ ] Be able to upload your own profile photo
 
 ### What am I working on right now?
-Designing the dashboard
+Getting better-sentral working on a server
