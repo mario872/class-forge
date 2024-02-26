@@ -20,6 +20,9 @@
   <div id="grid" class="flex top-0 m-6 mb-12 grid grid-cols-1 md:grid-cols-3">
     <!-- Notices  -->
     <div id="notices-grid" class="m-6 grid grid-cols-1">
+    <div class="ml-4 mr-4 mb-4 outline outline-blue-600">
+      <p class="pl-6 font-bold">Notices</p>
+    </div>
     {% set count = namespace(value=0) %}
     {% for notice in data['notices'] %}
       <div id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', ' Reveal content...')" onmouseover="elementAppend('notice-{{ count.value }}-title', ' Reveal content...', 'notice-{{ count.value }}-content')" {% endif %} {%if notice['content'] != ''%} class="m-4 outline outline-blue-600 hover:outline-dashed" {% else %} class="m-4 outline outline-indigo-700 hover:outline-dashed" {% endif %} >
@@ -34,37 +37,39 @@
 
     <!-- Timetable -->
     <div id="timetable-grid" class="flex top-0 m-6 grid grid-cols-1">
-    {% set count = namespace(value=0) %}
+    {% set count = namespace(value=1) %}
     {% for day in data['timetable'] %}
       {% if day['is_today'] %}
       <table class="table-auto outline outline-blue-600">
       <th class="m-6 outline-blue-600 text-center border-collapse">Periods</th>
-        {% set period_num = namespace(value=0) %}
+        {% set period_num = namespace(value=1) %}
         {% for period in day['periods'] %}
-          <tr class="m-6">
-            <td class="m-6 p-3 border-t-2 border-blue-600 border-r-2 border-blue-600">{{ period_num.value }}</td>
-            <td class="m-6 p-3 border-t-2 border-blue-600">
-              <table>
-                <tr>
-                  <td class="pl-1">
-                    {{ period.full_name }}
-                  </td>
-                  <td class="pr-1 float-right">
-                    {{ period.room }}
-                  </td>
-                </tr>
-                <tr>
-                  <td class="pl-1">
-                    {{ period.name }}
-                  </td>
-                  <td class="pr-1 float-right">
-                    {{ period.teacher }}
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          {% set period_num.value = period_num.value + 1 %}
+          {% if period.full_name != None %}
+            <tr class="m-6">
+              <td class="m-6 p-3 border-t-2 border-blue-600 border-r-2 border-blue-600">{{ period_num.value }}</td>
+              <td class="m-6 p-3 border-t-2 border-blue-600">
+                <table>
+                  <tr>
+                    <td class="pl-1">
+                      {{ period.full_name }}
+                    </td>
+                    <td class="pr-1 float-right">
+                      {{ period.room }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="pl-1">
+                      {{ period.name }}
+                    </td>
+                    <td class="pr-1 float-right">
+                      {{ period.teacher }}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            {% set period_num.value = period_num.value + 1 %}
+          {% endif %}
         {% endfor %}  
       {% endif %}
     </table>

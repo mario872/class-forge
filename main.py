@@ -110,7 +110,7 @@ def finish_login():
             'password': data['password'],
             'base_url': data['base_url'],
             'state': data['state'],
-            'headless': False
+            'headless': True
             }
        
     encrypted_user = {'username': username,
@@ -195,7 +195,7 @@ def reload():
     if not user:
         return redirect('/login')
     
-    user['headless'] = False
+    user['headless'] = True
     
     data = sentralify(user)
     
@@ -212,4 +212,5 @@ def reload():
     
 
 #app.config['SESSION_COOKIE_DOMAIN'] = 'jimmyscompany.top'
-app.run('0.0.0.0', 5000)
+if __name__ == '__main__':
+    app.run('0.0.0.0', 5000)

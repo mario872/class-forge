@@ -1,3 +1,5 @@
 flask
 pycryptodome
 sentralify
+markdown
+beautifulsoup4

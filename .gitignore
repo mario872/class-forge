@@ -7,3 +7,7 @@ playground.py
 playground.py
 users/*
 contexts/*
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
