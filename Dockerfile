@@ -1,15 +1,11 @@
 # syntax=docker/dockerfile:1
 
-FROM ubuntu:22.04
+FROM python:3.11-slim-bullseye
 LABEL maintainer="jamesaglynn10@gmail.com"
-LABEL version="0.1"
+LABEL version="0.2"
 LABEL description="This is the docker image for better-sentral"
 
 ARG DEBIAN_FRONTEND=noninteractive
-
-RUN apt update
-RUN apt install python3-pip python3 tree -y
-RUN apt clean
 
 WORKDIR /home/better-sentral/
 
@@ -20,12 +16,10 @@ RUN mkdir /home/better-sentral/users
 COPY main.py /home/better-sentral/main.py
 COPY requirements.txt /home/better-sentral/requirements.txt
 
-RUN tree /home/better-sentral/
+RUN python3 -m pip install --upgrade -r /home/better-sentral/requirements.txt
 
-RUN python3 -m pip install -r /home/better-sentral/requirements.txt
-
-RUN playwright install
-RUN playwright install-deps
+RUN python3 -m playwright install
+RUN python3 -m playwright install-deps
 
 EXPOSE 80 443
 

@@ -6,8 +6,8 @@ from Crypto.PublicKey import RSA
 from binascii import hexlify
 import os
 import random
-import markdown # pip install markdown
-from bs4 import BeautifulSoup # pip install beautifulsoup4
+import markdown
+from bs4 import BeautifulSoup
 
 fake_user = {'username': 'your.name',
              'password': 'your_password',
@@ -16,7 +16,6 @@ fake_user = {'username': 'your.name',
              'photo_path': 'https://img.apmcdn.org/768cb350c59023919f564341090e3eea4970388c/square/72dd92-20180309-rick-astley.jpg'}
 
 app = Flask(__name__)
-
 
 def md_to_text(md):
     html = markdown.markdown(md)
@@ -50,8 +49,16 @@ def decrypt(in_, private_key, test=None):
 def cookies_present(request):
     username = request.cookies.get('username')
     password = request.cookies.get('password')
+    
     if username != None or password != None:
+        try:
+            open(f'users/{username}/config.json', 'r').close()
+        except FileNotFoundError:
+            print('Error: Cookies were present, but there was no user config found!')
+            return False
+        
         return True
+    
     else:
         return False
     
