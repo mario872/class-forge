@@ -1,5 +1,5 @@
 # better-sentral
-Sentral has been updated, and I hate it. It looks bad, and horrible, so I'm just going to make my own webpage.
+Sentral has been updated, and I don't particularly like the look of it, so I'm going to try and make it look nicer.
 
 Bugs to Squash:
  - [ ] If there is no folder created for the user, but hte user has cookies set, it errors out
