@@ -18,15 +18,16 @@
   
   <!-- Main informational view -->
   <div id="grid" class="flex top-0 m-6 mb-12 grid grid-cols-1 md:grid-cols-3">
+
     <!-- Notices  -->
-    <div id="notices-grid" class="m-6 grid grid-cols-1">
-    <div class="ml-4 mr-4 mb-4 outline outline-blue-600">
+    <div id="notices-grid" class="m-6 outline outline-blue-600 grid grid-cols-1">
+    <div class="ml-0">
       <p class="pl-6 font-bold">Notices</p>
     </div>
     {% set count = namespace(value=0) %}
     {% for notice in data['notices'] %}
-      <div id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', ' Reveal content...')" onmouseover="elementAppend('notice-{{ count.value }}-title', ' Reveal content...', 'notice-{{ count.value }}-content')" {% endif %} {%if notice['content'] != ''%} class="m-4 outline outline-blue-600 hover:outline-dashed" {% else %} class="m-4 outline outline-indigo-700 hover:outline-dashed" {% endif %} >
-        <h4 id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="text-blue-600 font-medium" {% else %} class="text-indigo-700 font-medium" {% endif %}>{{ notice['title'] }}</h4>
+      <div id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...')" onmouseover="elementAppend('notice-{{ count.value }}-title', '\nReveal content...', 'notice-{{ count.value }}-content')" {% endif %} {% if notice['content'] != '' %} class="m-4 hover:outline hover:outline-blue-600 hover:outline-dashed" {% else %} class="m-4 hover:outline hover:outline-indigo-700 hover:outline-dashed" {% endif %} >
+        <h4 id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium" {% else %} class="text-indigo-700 font-medium" {% endif %}>{{ notice['title'] }}</h4>
         {% if notice['content'] != "" %}
         <p id="notice-{{ count.value }}-content" class="hidden">{{ notice['content'] }}</p>
         {% endif %}
@@ -50,10 +51,10 @@
               <td class="m-6 p-3 border-t-2 border-blue-600">
                 <table>
                   <tr>
-                    <td class="pl-1">
+                    <td class="pl-1 font-semibold">
                       {{ period.full_name }}
                     </td>
-                    <td class="pr-1 float-right">
+                    <td class="pr-1 font-semibold float-right">
                       {{ period.room }}
                     </td>
                   </tr>
@@ -78,6 +79,8 @@
     </div>
 
   </div>
+
+  <p>Took {{ data['time_elapsed'] }} seconds to gather data</p>
 <!-- End of index.jinja -->
 {% include 'partials/footer.jinja' with context %}
 </body>

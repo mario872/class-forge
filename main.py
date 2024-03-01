@@ -8,12 +8,17 @@ import os
 import random
 import markdown
 from bs4 import BeautifulSoup
+from threading import Timer
+import urllib
+from base64 import urlsafe_b64encode, urlsafe_b64decode
 
 fake_user = {'username': 'your.name',
              'password': 'your_password',
              'state': 'nsw',
              'base_ur': 'caringbahhs',
              'photo_path': 'https://img.apmcdn.org/768cb350c59023919f564341090e3eea4970388c/square/72dd92-20180309-rick-astley.jpg'}
+
+timers = {}
 
 app = Flask(__name__)
 
@@ -23,7 +28,10 @@ def md_to_text(md):
     return soup.get_text()
 
 def decrypt(in_, private_key, test=None):
-    private_key = RSA.import_key(private_key.encode())
+    try:
+        private_key = RSA.import_key(private_key.encode())
+    except AttributeError:
+        private_key = RSA.import_key(private_key)
     
     decrypter = PKCS1_OAEP.new(key=private_key)
     
@@ -48,7 +56,7 @@ def decrypt(in_, private_key, test=None):
 
 def cookies_present(request):
     username = request.cookies.get('username')
-    password = request.cookies.get('password')
+    password = request.cookies.get('private_key')
     
     if username != None or password != None:
         try:
@@ -62,13 +70,20 @@ def cookies_present(request):
     else:
         return False
     
-def load_user_config(request):
-    with open(f'users/{request.cookies.get("username")}/config.json', 'r') as user_config_file:
-        user = json.load(user_config_file)
+def load_user_config(request, username=None, private_key=None):
+    if request != None:
+        with open(f'users/{request.cookies.get("username")}/config.json', 'r') as user_config_file:
+            user = json.load(user_config_file)
+            
+        user = decrypt(user, request.cookies.get('private_key'), test=user['username'])
+    else:
+        with open(f'users/{username}/config.json', 'r') as user_config_file:
+            user = json.load(user_config_file)
+            
+        user = decrypt(user, private_key, test=user['username'])
         
-    user = decrypt(user, request.cookies.get('private_key'), test=user['username'])
     if user == False:
-        return False
+            return False
     
     try:
         open(user['photo_path'], 'r').close()
@@ -82,6 +97,35 @@ def load_user_data(user):
         data = json.load(data_json)
 
     return data
+
+def repeat_reload(username, private_key):
+    global timers
+    
+    print('TIMER WENT OFF!')
+    user = load_user_config(None, username=username, private_key=private_key)
+    
+    user['headless'] = True
+    
+    data = sentralify(user)
+    
+    for notice in data['notices']:
+        try:
+            notice['text'] = md_to_text(notice['text'])
+        except KeyError:
+            pass
+    
+    with open(f'users/{user["username"]}/data.json', 'w') as data_json:
+        json.dump(data, data_json)
+    
+    print('The timer stopped going off.')
+    
+    try:
+        timers[username].cancel()
+    except KeyError:
+        pass
+    
+    timers[username] = Timer(1800.0, lambda username=username, private_key=private_key: repeat_reload(username, private_key))
+    timers[username].start()
 
 @app.route('/')
 def one():
@@ -194,10 +238,28 @@ def calendar():
 
 @app.route('/reload')
 def reload():
-    if not cookies_present(request):
-        return redirect('/login')
+    """
+    try:
+        username = request.args['username']
+        private_key = request.args['state'] # To throw off hackers, probably won't work
+        
+        UandP = {'username': username, 'private_key': private_key}
+        
+        Timer(10.0, lambda UandP=UandP: redirect(f'/reload?username={UandP["username"]}&state={UandP["private_key"]}')).start()
+        url_present = True
+        print('We got a reload by Timer!')
+    except KeyError:
+        url_present = False
     
-    user = load_user_config(request)
+    if not url_present:
+        if not cookies_present(request):
+            return redirect('/login')
+    
+        user = load_user_config(request)
+    
+    else:
+        print(urllib.parse.unquote_plus(request.args['state']))
+        user = load_user_config(None, username=request.args['username'], private_key=urllib.parse.unquote_plus(request.args['state'].decode(encoding='latin')))
     
     if not user:
         return redirect('/login')
@@ -215,9 +277,20 @@ def reload():
     with open(f'users/{user["username"]}/data.json', 'w') as data_json:
         json.dump(data, data_json)
     
+    if not url_present:
+        return redirect('/dashboard')
+    else:
+        return
+    """
+    
+    if not cookies_present(request):
+        return redirect('/login')
+    
+    user = load_user_config(request)
+    
+    repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'))
+    
     return redirect('/dashboard')
     
-
-#app.config['SESSION_COOKIE_DOMAIN'] = 'jimmyscompany.top'
 if __name__ == '__main__':
-    app.run('0.0.0.0', 5000)
+    app.run('0.0.0.0', 5000, use_evalex=False)
