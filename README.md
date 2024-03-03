@@ -2,12 +2,14 @@
 Sentral has been updated, and I don't particularly like the look of it, so I'm going to try and make it look nicer.
 
 Bugs to Squash:
- - [ ] If there is no folder created for the user, but hte user has cookies set, it errors out
- - [ ] Fetching timetable creates TimeoutError in Sentralify, how to deal with that here?
- - [ ] Remove borders around notices when not hovering
+ - [ ] Javascript Not Enabled in Sentralify?
+ - [ ] Fetching timetable sometimes creates TimeoutError in Sentralify, how to deal with that here?
  - [ ] Make text in notices black
 
 Soon to be features:
+ - [ ] Add junk / news section
+ - [ ] Add random fake news article about apples each day in 'junk' section
+ - [ ] Add daily weather
  - [ ] Add Sentralify logo to tab
  - [x] See your timetable
  - [x] See daily notices

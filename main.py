@@ -10,7 +10,8 @@ import markdown
 from bs4 import BeautifulSoup
 from threading import Timer
 import urllib
-from base64 import urlsafe_b64encode, urlsafe_b64decode
+from dateutil.parser import parse
+from datetime import datetime, timedelta
 
 fake_user = {'username': 'your.name',
              'password': 'your_password',
@@ -19,6 +20,8 @@ fake_user = {'username': 'your.name',
              'photo_path': 'https://img.apmcdn.org/768cb350c59023919f564341090e3eea4970388c/square/72dd92-20180309-rick-astley.jpg'}
 
 timers = {}
+
+headless = True
 
 app = Flask(__name__)
 
@@ -92,19 +95,24 @@ def load_user_config(request, username=None, private_key=None):
     
     return user
 
-def load_user_data(user):
-    with open(f'users/{user["username"]}/data.json', 'r') as data_json:
-        data = json.load(data_json)
+def load_user_data(user: dict, private_key: str):
+    try:
+        with open(f'users/{user["username"]}/data.json', 'r') as data_json:
+            data = json.load(data_json)
+            return data
+    except FileNotFoundError:
+        repeat_reload(user['username'], private_key)
+        with open(f'users/{user["username"]}/data.json', 'r') as data_json:
+            data = json.load(data_json)
+            return data
 
-    return data
-
-def repeat_reload(username, private_key):
+def repeat_reload(username: str, private_key: str, refresh_time=1800):
     global timers
     
     print('TIMER WENT OFF!')
     user = load_user_config(None, username=username, private_key=private_key)
     
-    user['headless'] = True
+    user['headless'] = headless
     
     data = sentralify(user)
     
@@ -121,10 +129,12 @@ def repeat_reload(username, private_key):
     
     try:
         timers[username].cancel()
+        print('Cancelled the previous timer!')
     except KeyError:
         pass
     
-    timers[username] = Timer(1800.0, lambda username=username, private_key=private_key: repeat_reload(username, private_key))
+    #1800.0 for 30 minutes, 600 for 10 minutes
+    timers[username] = Timer(float(refresh_time), lambda username=username, private_key=private_key: repeat_reload(username, private_key))
     timers[username].start()
 
 @app.route('/')
@@ -136,7 +146,12 @@ def one():
     
 @app.route('/login')
 def login():
-    return render_template('login.jinja', user=fake_user)
+    try:
+        message = request.args.get('message')
+    except KeyError:
+        message = ''
+    
+    return render_template('login.jinja', user=fake_user, message=message)
 
 @app.route('/login/finish', methods=['POST'])
 def finish_login():
@@ -161,7 +176,7 @@ def finish_login():
             'password': data['password'],
             'base_url': data['base_url'],
             'state': data['state'],
-            'headless': True
+            'headless': headless
             }
        
     encrypted_user = {'username': username,
@@ -176,13 +191,13 @@ def finish_login():
             json.dump(encrypted_user, user_config)
             
         response = make_response(render_template('login_complete.jinja', user=fake_user))
-        response.set_cookie('username', data['username'], secure=True)
-        response.set_cookie('private_key', private_key.export_key().decode(), secure=True)
+        response.set_cookie('username', data['username'], secure=True, expires=datetime(day=datetime.now().day + 3, month=datetime.now().month, year=datetime.now().year))
+        response.set_cookie('private_key', private_key.export_key().decode(), secure=True, expires=datetime(day=datetime.now().day + 3, month=datetime.now().month, year=datetime.now().year))
             
         return response
     
     else:
-        return redirect('/login')
+        return redirect('/login?message=Sorry,+those+login+details+are+incorrect')
 
 @app.route('/dashboard')
 def home():    
@@ -194,11 +209,23 @@ def home():
     if not user:
         return redirect('/login')
     
-    data = load_user_data(user)
+    data = load_user_data(user, request.cookies.get('private_key'))
     
-    lorem_ipsum = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed volutpat libero volutpat purus condimentum pellentesque. Donec lobortis ipsum et lacus facilisis tempor. Curabitur efficitur velit eget enim tincidunt ullamcorper. Donec ornare purus quis lacinia ultricies. Morbi fringilla dolor non ex laoreet, a rutrum ipsum bibendum. '
+    three_day_timetable = []
+    possible_days = [datetime.now() - timedelta(days=1), datetime.now(), datetime.now() + timedelta(days=1)]
     
-    return render_template('index.jinja', user=user, data=data, lorem_ipsum=lorem_ipsum)
+    for day in data['timetable']:
+        for pday in possible_days:
+            if parse(day['date']).day == pday.day:
+                three_day_timetable.append(day)
+    
+    try:
+        tmp = timers[user['username']]
+        message = None
+    except KeyError:
+        message = 'Automatic reloading is not enabled, please press the fetch timetable button.'
+        
+    return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable)
 
 @app.route('/timetable')
 def timetable():
