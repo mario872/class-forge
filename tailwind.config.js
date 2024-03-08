@@ -3,6 +3,11 @@ module.exports = {
   content: ["./templates/*.jinja",
             "./templates/partials/*.jinja"
             ],
+  safelist: [
+    {
+      pattern: /^bg\-.*$/,
+    },
+  ],
   theme: {
     extend: {},
   },

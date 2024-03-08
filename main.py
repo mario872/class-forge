@@ -9,7 +9,6 @@ import random
 import markdown
 from bs4 import BeautifulSoup
 from threading import Timer
-import urllib
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 
@@ -150,7 +149,7 @@ def login():
         message = request.args.get('message')
     except KeyError:
         message = ''
-    
+
     return render_template('login.jinja', user=fake_user, message=message)
 
 @app.route('/login/finish', methods=['POST'])
@@ -212,7 +211,17 @@ def home():
     data = load_user_data(user, request.cookies.get('private_key'))
     
     three_day_timetable = []
-    possible_days = [datetime.now() - timedelta(days=1), datetime.now(), datetime.now() + timedelta(days=1)]
+    if not datetime.now().weekday() in [0, 4, 5, 6]:
+        possible_days = [datetime.now() - timedelta(days=1), datetime.now(), datetime.now() + timedelta(days=1)]
+    else:
+        if datetime.now().weekday() == 0:
+            possible_days = [datetime.now() - timedelta(days=3), datetime.now(), datetime.now() + timedelta(days=1)]
+        elif datetime.now().weekday() == 4:
+            possible_days = [datetime.now() - timedelta(days=1), datetime.now(), datetime.now() + timedelta(days=3)]
+        elif datetime.now().weekday() == 5:
+            possible_days = [datetime.now() - timedelta(days=1), datetime.now() + timedelta(days=2), datetime.now() + timedelta(days=3)]
+        elif datetime.now().weekday() == 6:
+            possible_days = [datetime.now() - timedelta(days=2), datetime.now() + timedelta(days=1), datetime.now() + timedelta(days=2)]
     
     for day in data['timetable']:
         for pday in possible_days:
@@ -224,8 +233,23 @@ def home():
         message = None
     except KeyError:
         message = 'Automatic reloading is not enabled, please press the fetch timetable button.'
-        
-    return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable)
+    
+    events_today = []
+    
+    for event in data['calendar']:
+        if parse(event['date']).day == datetime.now().day and parse(event['date']).month == datetime.now().month:
+            if event['start'] != None:
+                event['start'] = parse(event['start']).strftime('%H:%M')
+            if event['end'] != None:
+                event['end'] = parse(event['end']).strftime('%H:%M')
+            
+            event['date'] = parse(event['date']).strftime('%d/%m/%Y')
+            
+            event['title'] = event['title']#.replace('Events: ', '')
+            
+            events_today.append(event)
+    
+    return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today)
 
 @app.route('/timetable')
 def timetable():
@@ -236,6 +260,8 @@ def timetable():
     
     if not user:
         return redirect('/login')
+    
+    return redirect('/dashboard')
     
     return render_template('timetable.jinja', user=user)
 
@@ -249,6 +275,8 @@ def notices():
     if not user:
         return redirect('/login')
     
+    return redirect('/dashboard')
+    
     return render_template('notices.jinja', user=user)
 
 @app.route('/calendar')
@@ -261,7 +289,23 @@ def calendar():
     if not user:
         return redirect('/login')
     
+    return redirect('/dashboard')
+    
     return render_template('calendar.jinja', user=user)
+
+@app.route('/details')
+def details():
+    if not cookies_present(request):
+        return redirect('/login')
+    
+    user = load_user_config(request)
+    
+    if not user:
+        return redirect('/login')
+    
+    return redirect('/dashboard')
+    
+    return render_template('details.jinja', user=user)
 
 @app.route('/reload')
 def reload():

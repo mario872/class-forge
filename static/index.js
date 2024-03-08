@@ -24,3 +24,8 @@ function elementRemove(elementID, text) {
     let element = document.getElementById(elementID);
     element.innerText = element.innerText.replace(text, '')
 }
+
+function elementReplace(elementID, orginalText, newText) {
+    let element = document.getElementById(elementID);
+    element.innterText = element.innerText.replace(orginalText, newText)
+}

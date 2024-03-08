@@ -28,13 +28,13 @@
   <div id="grid" class="flex top-0 m-6 mb-12 grid grid-cols-1 md:grid-cols-3">
 
     <!-- Notices  -->
-    <div id="notices-grid" class="m-6 outline outline-blue-600 grid grid-cols-1">
+    <div id="notices-grid" class="m-6 border-2 border-blue-600 grid grid-cols-1">
     <div class="ml-0">
       <p class="pl-6 font-bold">Notices</p>
     </div>
     {% set count = namespace(value=0) %}
     {% for notice in data['notices'] %}
-      <div id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...')" onmouseover="elementAppend('notice-{{ count.value }}-title', '\nReveal content...', 'notice-{{ count.value }}-content')" {% endif %} {% if notice['content'] != '' %} class="m-4 hover:outline hover:outline-blue-600 hover:outline-dashed" {% else %} class="m-4 hover:outline hover:outline-indigo-700 hover:outline-dashed" {% endif %} >
+      <div id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...', 'ㅤ')" onmouseover="elementReplace('notice-{{ count.value }}-title', 'ㅤ', '\nReveal content...')" {% endif %} {% if notice['content'] != '' %} class="m-4 hover:outline hover:outline-blue-600 hover:outline-dashed" {% else %} class="m-4 hover:outline hover:outline-indigo-700 hover:outline-dashed" {% endif %} >
         <h4 id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium" {% else %} class="text-indigo-700 font-medium" {% endif %}>{{ notice['title'] }}</h4>
         {% if notice['content'] != "" %}
         <p id="notice-{{ count.value }}-content" class="hidden">{{ notice['content'] }}</p>
@@ -47,23 +47,27 @@
     <!-- Timetable -->
     <div id="timetable-grid" class="flex top-0 m-6 grid grid-cols-1">
     {% set count = namespace(value=1) %}
-    {% for day in data['timetable'] %}
-      {% if day['is_today'] %}
-      <table class="table-auto outline outline-blue-600">
-      <th class="m-6 outline-blue-600 text-center border-collapse">Periods</th>
+    <table class="table-auto border-2 border-blue-600">
+    {% for day in tdt %}
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">ㅤ</th>
+      <th class="m-6 w-full border-2 border-blue-600 text-center border-collapse">Periods for {{ day['date'].split(' ')[:3]|join(' ') }}</th>
         {% set period_num = namespace(value=1) %}
         {% for period in day['periods'] %}
           {% if period.full_name != None %}
             <tr class="m-6">
-              <td class="m-6 p-3 border-t-2 border-blue-600 border-r-2 border-blue-600">{{ period_num.value }}</td>
-              <td class="m-6 p-3 border-t-2 border-blue-600">
+              <td class="m-6 w-0.5 px-2 border-2 border-blue-600" style="background-color: #{{ period.border_colour }}">{{ period_num.value }}</td>
+              <td class="m-6 px-2 border-2 border-blue-600" style="background-color: #{{ period.background_colour }};">
                 <table>
                   <tr>
                     <td class="pl-1 font-semibold">
                       {{ period.full_name }}
                     </td>
                     <td class="pr-1 font-semibold float-right">
-                      {{ period.room }}
+                      {% if period.room != None %}
+                        {{ period.room }}
+                      {% else %}
+                        No room
+                      {% endif %}
                     </td>
                   </tr>
                   <tr>
@@ -71,7 +75,11 @@
                       {{ period.name }}
                     </td>
                     <td class="pr-1 float-right">
+                    {% if period.teacher != None %}
                       {{ period.teacher }}
+                    {% else %}
+                      No teacher
+                    {% endif %}
                     </td>
                   </tr>
                 </table>
@@ -79,11 +87,30 @@
             </tr>
             {% set period_num.value = period_num.value + 1 %}
           {% endif %}
-        {% endfor %}  
-      {% endif %}
-    </table>
+        {% endfor %}
     {% set count.value = count.value + 1 %}
     {% endfor %}
+    </table>
+    </div>
+
+    <!-- Calendar -->
+    <div id="calendar-grid" class="flex top-0 m-6">
+      {% set count = namespace(value=1) %}
+
+      <table class="table-auto border-2 border-blue-600 sm:w-full">
+      <th class="m-6 outline-blue-600 text-center border-collapse">Calendar</th>
+      {% for event in today_calendar %}
+
+        <tr id="event-{{ count.value }}">
+          <td class="m-6 w-0.5 px-2 border-t-2 border-blue-600">
+            <h3>{{ event.title }}</h3>
+            <p>On {{ event.date }}</p>
+          </td>
+        </tr>
+      
+        {% set count.value = count.value + 1 %}
+      {% endfor %}
+    </table>
     </div>
 
   </div>

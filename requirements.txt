@@ -3,3 +3,4 @@ pycryptodome
 sentralify
 markdown
 beautifulsoup4
+python-dateutil
