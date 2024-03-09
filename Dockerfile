@@ -2,14 +2,13 @@
 
 FROM python:3.11-slim-bullseye
 LABEL maintainer="jamesaglynn10@gmail.com"
-LABEL version="0.8"
+LABEL version="0.9"
 LABEL description="This is the docker image for better-sentral"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /home/better-sentral/
 
-COPY node_modules /home/better-sentral/node_modules
 COPY static /home/better-sentral/static
 COPY templates /home/better-sentral/templates
 RUN mkdir /home/better-sentral/users
