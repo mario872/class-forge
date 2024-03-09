@@ -24,4 +24,4 @@ Long term features:
  - [ ] Be able to upload your own profile photo
 
 ### What am I working on right now?
-Fixing up Sentralify and Improving Reliability
+Trying to develop other pages while still fixing up the main dashboard
