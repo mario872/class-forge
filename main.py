@@ -136,6 +136,15 @@ def repeat_reload(username: str, private_key: str, refresh_time=1800):
     timers[username] = Timer(float(refresh_time), lambda username=username, private_key=private_key: repeat_reload(username, private_key))
     timers[username].start()
 
+def format_event(event, event_date):
+    if event['start'] is not None:
+        event['start'] = event['start'].strftime('%H:%M')
+    if event['end'] is not None:
+        event['end'] = event['end'].strftime('%H:%M')
+    event['date'] = event_date.strftime('%d/%m/%Y')
+    # Assuming title cleaning is not needed for now, comment it out
+    # event['title'] = event['title'].replace('Events: ', '')
+
 @app.route('/')
 def one():
     if cookies_present(request):
@@ -236,17 +245,32 @@ def home():
     
     events_today = []
     
+    today = datetime.now()
+    weekend = today.weekday() in [5, 6]
+
+    """
     for event in data['calendar']:
-        if parse(event['date']).day == datetime.now().day and parse(event['date']).month == datetime.now().month:
-            if event['start'] != None:
-                event['start'] = parse(event['start']).strftime('%H:%M')
-            if event['end'] != None:
-                event['end'] = parse(event['end']).strftime('%H:%M')
-            
-            event['date'] = parse(event['date']).strftime('%d/%m/%Y')
-            
-            event['title'] = event['title']#.replace('Events: ', '')
-            
+        event_date = parse(event['date'])
+        
+        if not weekend and event_date.day == today.day and event_date.month == today.month:
+            # Today's events
+            print(event_date.day, event_date.month, today.day, today.month)
+            format_event(event, event_date)
+            events_today.append(event)
+        elif weekend:
+            offset_days = 1 if weekend == 6 else 2
+            if event_date.day == (today + timedelta(days=offset_days)).day and event_date.month == (today + timedelta(days=offset_days)).month:
+                # Weekend events
+                print(event_date.day, event_date.month, today.day, today.month)
+                format_event(event, event_date)
+                events_today.append(event)
+    """
+    for event in data['calendar']:
+        event_date = parse(event['date'])
+        
+        if event_date.day == today.day and event_date.month == today.month:
+            # Today's events
+            format_event(event, event_date)
             events_today.append(event)
     
     return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today)
