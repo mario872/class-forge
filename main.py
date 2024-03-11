@@ -285,8 +285,6 @@ def timetable():
     if not user:
         return redirect('/login')
     
-    return redirect('/dashboard')
-    
     return render_template('timetable.jinja', user=user)
 
 @app.route('/notices')
