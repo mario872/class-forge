@@ -2,10 +2,17 @@
 
 FROM python:3.11-slim-bullseye
 LABEL maintainer="jamesaglynn10@gmail.com"
-LABEL version="0.9"
+LABEL version="0.14"
 LABEL description="This is the docker image for better-sentral"
 
 ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+RUN apt-get install -yq tzdata
+RUN ln -fs /usr/share/zoneinfo/Australia/Sydney /etc/localtime
+RUN dpkg-reconfigure -f noninteractive tzdata
+
+ENV TZ="Australia/Sydney"
 
 WORKDIR /home/better-sentral/
 

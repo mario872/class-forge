@@ -8,12 +8,42 @@
 </head>
 <body>
     <!-- Start of timetable.jinja -->
-    <header class="bg-white shadow">
+  <header class="bg-white shadow">
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <h1 class="text-3xl font-bold tracking-tight text-gray-900">Timetable</h1>
     </div>
   </header>
+
+  <table class="m-12 p-2 table-auto border-2 border-blue-600" id="calendar">
+    <tr>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Week A</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Monday</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Tuesday</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Wednesday</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Thursday</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Friday</th>
+    </tr>
+
+    {% set day_num = namespace(value=1) %}
+    {% for day in data['timetable'][:4] %}
+    {% endfor %}
+    <tr>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">0</th>
+    </tr>
+
+
+    <tr>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Week B</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Monday</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Tuesday</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Wednesday</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Thursday</th>
+      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Friday</th>
+    </tr>
+  </table>
+
     <!-- End of timetable.jinja -->
 {% include 'partials/footer.jinja' with context %}
+
 </body>
 </html>

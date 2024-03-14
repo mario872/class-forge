@@ -18,7 +18,7 @@
   </header>
 
   {% if message != None %}
-    <div class="m-4 p-3 w-fill py-1.5 outline outline-red-500 bg-red-300/25 rounded-md border-0 text-gray-900 shadow-sm">
+    <div class="m-4 mx-12 p-3 w-fill py-1.5 outline outline-red-500 bg-red-300/25 text-gray-900 shadow-sm">
       <p class="text-center"> <i class="fa-solid fa-circle-exclamation"></i> Error: {{ message }}</p>
     </div>
   {% endif %}
@@ -34,9 +34,9 @@
     {% set count = namespace(value=0) %}
     {% for notice in data['notices'] %}
       <div id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...', 'ㅤ')" onmouseover="elementReplace('notice-{{ count.value }}-title', 'ㅤ', '\nReveal content...')" {% endif %} {% if notice['content'] != '' %} class="m-4 hover:outline hover:outline-blue-600 hover:outline-dashed" {% else %} class="m-4 hover:outline hover:outline-indigo-700 hover:outline-dashed" {% endif %} >
-        <h4 id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium" {% else %} class="text-indigo-700 font-medium" {% endif %}>{{ notice['title'] }}</h4>
+        <h4 id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium text-wrap" {% else %} class="text-indigo-700 font-medium text-wrap" {% endif %}>{{ notice['title'] }}</h4>
         {% if notice['content'] != "" %}
-        <p id="notice-{{ count.value }}-content" class="hidden">{{ notice['content'] }}</p>
+        <p id="notice-{{ count.value }}-content" class="hidden text-wrap" style="overflow-wrap: break-word;">{{ notice['content'] }}</p>
         {% endif %}
       </div>
       {% set count.value = count.value + 1 %}
@@ -114,7 +114,7 @@
 
   </div>
 
-  <p>Took {{ data['time_elapsed'] }} seconds to gather data</p>
+  <p>Took {{ data['time_elapsed']|float|round(2) }} seconds to gather data</p>
 <!-- End of index.jinja -->
 {% include 'partials/footer.jinja' with context %}
 </body>

@@ -1,16 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./templates/*.jinja",
-            "./templates/partials/*.jinja"
+            "./templates/partials/*.jinja",
             ],
-  safelist: [
-    {
-      pattern: /^bg\-.*$/,
-    },
-  ],
-  theme: {
-    extend: {},
-  },
+  theme: {},
   plugins: [require('@tailwindcss/forms'),],
 }
-

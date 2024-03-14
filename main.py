@@ -8,7 +8,7 @@ import os
 import random
 import markdown
 from bs4 import BeautifulSoup
-from threading import Timer
+from threading import Timer 
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 
@@ -284,6 +284,8 @@ def timetable():
     
     if not user:
         return redirect('/login')
+    
+    return redirect('/dashboard')
     
     return render_template('timetable.jinja', user=user)
 

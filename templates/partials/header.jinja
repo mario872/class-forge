@@ -17,13 +17,17 @@
           </div>
           <div class="hidden md:block">
             <div class="ml-10 flex items-baseline space-x-4">
+              {% set current_button_style = "bg-gray-900 text-white rounded-md px-3 py-2 text-base block font-medium" %}
+              {% set other_button_style = "text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-base block font-medium" %}
               <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-              <a href="/dashboard" class="bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium" aria-current="page">Dashboard</a>
-              <a href="/timetable" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Timetable</a>
-              <a href="/notices" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Notices</a>
-              <a href="/calendar" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Calendar</a>
-              <a href="/details" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Details</a>
-              <a href="/reload"><button id="fetch_button" onclick="fetch_timetable_css('fetch_button')" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-3 py-2 text-center me-2 mb-2">Fetch Timetable</button></a>
+              <a href="/dashboard" class="{% if request.path == '/dashboard' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}" aria-current="page">Dashboard</a>
+              <a href="/timetable" class="{% if request.path == '/timetable' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Timetable</a>
+              <a href="/notices" class="{% if request.path == '/notices' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Notices</a>
+              <a href="/calendar" class="{% if request.path == '/calendar' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Calendar</a>
+              <a href="/details" class="{% if request.path == '/details' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Details</a>
+              {% if not request.path in ['/login', '/login/finish']%}
+                <a href="/reload"><button id="fetch_button" onclick="fetch_timetable_css('fetch_button')" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-3 py-2 text-center me-2 mb-2">Fetch Timetable</button></a>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -63,12 +67,14 @@
     <div class="md:hidden hidden" id="mobile-menu">
       <div class="space-y-1 px-2 pb-3 pt-2 sm:px-3">
         <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-        <a href="/dashboard" class="bg-gray-900 text-white block rounded-md px-3 py-2 text-base font-medium" aria-current="page">Dashboard</a>
-        <a href="/timetable" class="text-gray-300 hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium">Timetable</a>
-        <a href="/notices" class="text-gray-300 hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium">Notices</a>
-        <a href="/calendar" class="text-gray-300 hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium">Calendar</a>
-        <a href="/details" class="text-gray-300 hover:bg-gray-700 hover:text-white block rounded-md px-3 py-2 text-base font-medium">Student Details</a>
-        <a href="/reload"><button id="fetch_button" onclick="fetch_timetable_css('fetch_button')" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-3 py-2 text-center me-2 mb-2">Fetch Timetable</button></a>
+        <a href="/dashboard" class="{% if request.path == '/dashboard' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}" aria-current="page">Dashboard</a>
+        <a href="/timetable" class="{% if request.path == '/timetable' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Timetable</a>
+        <a href="/notices" class="{% if request.path == '/notices' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Notices</a>
+        <a href="/calendar" class="{% if request.path == '/calendar' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Calendar</a>
+        <a href="/details" class="{% if request.path == '/details' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Student Details</a>
+        {% if not request.path in ['/login', '/login/finish']%}
+          <a href="/reload"><button id="fetch_button" onclick="fetch_timetable_css('fetch_button')" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-3 py-2 text-center me-2 mb-2">Fetch Timetable</button></a>
+        {% endif %}
       </div>
       <div class="border-t border-gray-700 pb-3 pt-4">
         <div class="flex items-center px-5">
@@ -83,4 +89,5 @@
       </div>
     </div>
   </nav>
+</div>
 <!-- End of header.jinja-->
