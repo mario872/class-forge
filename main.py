@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from threading import Timer 
 from dateutil.parser import parse
 from datetime import datetime, timedelta
+import ast
 
 fake_user = {'username': 'your.name',
              'password': 'your_password',
@@ -97,12 +98,12 @@ def load_user_config(request, username=None, private_key=None):
 def load_user_data(user: dict, private_key: str):
     try:
         with open(f'users/{user["username"]}/data.json', 'r') as data_json:
-            data = json.load(data_json)
+            data = ast.literal_eval(data_json.read())
             return data
     except FileNotFoundError:
         repeat_reload(user['username'], private_key)
         with open(f'users/{user["username"]}/data.json', 'r') as data_json:
-            data = json.load(data_json)
+            data = ast.literal_eval(data_json.read())
             return data
 
 def repeat_reload(username: str, private_key: str, refresh_time=1800):
@@ -122,7 +123,8 @@ def repeat_reload(username: str, private_key: str, refresh_time=1800):
             pass
     
     with open(f'users/{user["username"]}/data.json', 'w') as data_json:
-        json.dump(data, data_json)
+        data_json.write(f'{data}')
+        #json.dump(data, data_json)
     
     print('The timer stopped going off.')
     
@@ -285,9 +287,9 @@ def timetable():
     if not user:
         return redirect('/login')
     
-    return redirect('/dashboard')
+    data = load_user_data(user, request.cookies.get('private_key'))
     
-    return render_template('timetable.jinja', user=user)
+    return render_template('timetable.jinja', user=user, data=data)
 
 @app.route('/notices')
 def notices():
