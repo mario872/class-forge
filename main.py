@@ -66,8 +66,9 @@ def decrypt(in_, private_key, test=None):
 def cookies_present(request):
     username = request.cookies.get('username')
     password = request.cookies.get('private_key')
+    secret_key = request.cookies.get('secret_key')
     
-    if username != None or password != None:
+    if username != None or password != None or secret_key!= None:
         try:
             open(f'users/{username}/config.json', 'r').close()
         except FileNotFoundError:
@@ -232,7 +233,10 @@ def home():
     if not cookies_present(request):
         return redirect('/login')
     
-    user = load_user_config(request)
+    try:
+        user = load_user_config(request)
+    except ValueError:
+        return redirect('/login')
     
     if not user:
         return redirect('/login')
@@ -300,7 +304,11 @@ def timetable():
     if not cookies_present(request):
         return redirect('/login')
     
-    user = load_user_config(request)
+    try:
+        user = load_user_config(request)
+    except ValueError:
+        return redirect('/login')
+        
     
     if not user:
         return redirect('/login')
@@ -316,7 +324,10 @@ def notices():
     if not cookies_present(request):
         return redirect('/login')
     
-    user = load_user_config(request)
+    try:
+        user = load_user_config(request)
+    except ValueError:
+        return redirect('/login')
     
     if not user:
         return redirect('/login')
@@ -330,7 +341,10 @@ def calendar():
     if not cookies_present(request):
         return redirect('/login')
     
-    user = load_user_config(request)
+    try:
+        user = load_user_config(request)
+    except ValueError:
+        return redirect('/login')
     
     if not user:
         return redirect('/login')
@@ -344,7 +358,10 @@ def details():
     if not cookies_present(request):
         return redirect('/login')
     
-    user = load_user_config(request)
+    try:
+        user = load_user_config(request)
+    except ValueError:
+        return redirect('/login')
     
     if not user:
         return redirect('/login')
@@ -358,7 +375,10 @@ def reload():
     if not cookies_present(request):
         return redirect('/login')
     
-    user = load_user_config(request)
+    try:
+        user = load_user_config(request)
+    except ValueError:
+        return redirect('/login')
     
     repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'), secret_key=request.cookies.get('secret_key'))
     
