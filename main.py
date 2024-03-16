@@ -315,26 +315,7 @@ def timetable():
     
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
     
-    return redirect('/dashboard')
-    
     return render_template('timetable.jinja', user=user, data=data)
-
-@app.route('/notices')
-def notices():
-    if not cookies_present(request):
-        return redirect('/login')
-    
-    try:
-        user = load_user_config(request)
-    except ValueError:
-        return redirect('/login')
-    
-    if not user:
-        return redirect('/login')
-    
-    return redirect('/dashboard')
-    
-    return render_template('notices.jinja', user=user)
 
 @app.route('/calendar')
 def calendar():

@@ -16,35 +16,49 @@
 
   <table class="m-12 p-2 table-auto border-2 border-blue-600" id="calendar">
     <tr>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Week A</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Monday</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Tuesday</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Wednesday</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Thursday</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Friday</th>
+      <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">Week A</th>
+      {% for day in range(5) %}
+        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][day]['date'].split(' ')[:3]|join(' ') }}</th>
+      {% endfor%}
     </tr>
 
-    <tr>
     {% set day_num = namespace(value=0) %}
-    {% set period_num = namespace(value=0) %}
-    {% for period in data['timetable'][:4][day_num.value][period_num] %}
-      <td>{{ period.full_name }}</td>
-      {{ period_num = period_num + 1 }}
+    {% set period_num = namespace(value=1) %}
+    {% for x in range(data['timetable'][0]['periods']|length) %}
+      {% if data['timetable'][:5][day_num.value]['periods'][x]['full_name'] != None %}
+        <tr>
+          <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ period_num.value }}</th>
+          {% for y in range(5) %}
+            {% set day_num.value = y %}
+            <td class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][:5][day_num.value]['periods'][x]['full_name'] }}</td>
+          {% endfor %}
+        </tr>
+        {% set period_num.value = period_num.value + 1%}
+      {% endif %}
     {% endfor %}
-    </tr>
-    <tr>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">0</th>
-    </tr>
-
 
     <tr>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Week B</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Monday</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Tuesday</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Wednesday</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Thursday</th>
-      <th class="m-6 border-2 border-blue-600 text-center border-collapse">Friday</th>
+      <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">Week B</th>
+      {% for day in range(5, 10) %}
+        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][day]['date'].split(' ')[:3]|join(' ') }}</th>
+      {% endfor%}
     </tr>
+
+    {% set day_num = namespace(value=0) %}
+    {% set period_num = namespace(value=1) %}
+    {% for x in range(data['timetable'][6]['periods']|length) %}
+      {% if data['timetable'][:5][day_num.value]['periods'][x]['full_name'] != None %}
+        <tr>
+          <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ period_num.value }}</th>
+          {% for y in range(5) %}
+            {% set day_num.value = y %}
+            <td class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][5:10][day_num.value]['periods'][x]['full_name'] }}</td>
+          {% endfor %}
+        </tr>
+        {% set period_num.value = period_num.value + 1%}
+      {% endif %}
+    {% endfor %}
+
   </table>
 
     <!-- End of timetable.jinja -->

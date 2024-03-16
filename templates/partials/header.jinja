@@ -22,7 +22,6 @@
               <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
               <a href="/dashboard" class="{% if request.path == '/dashboard' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}" aria-current="page">Dashboard</a>
               <a href="/timetable" class="{% if request.path == '/timetable' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Timetable</a>
-              <a href="/notices" class="{% if request.path == '/notices' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Notices</a>
               <a href="/calendar" class="{% if request.path == '/calendar' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Calendar</a>
               <a href="/details" class="{% if request.path == '/details' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Details</a>
               {% if not request.path in ['/login', '/login/finish']%}
@@ -69,7 +68,6 @@
         <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
         <a href="/dashboard" class="{% if request.path == '/dashboard' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}" aria-current="page">Dashboard</a>
         <a href="/timetable" class="{% if request.path == '/timetable' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Timetable</a>
-        <a href="/notices" class="{% if request.path == '/notices' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Notices</a>
         <a href="/calendar" class="{% if request.path == '/calendar' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Calendar</a>
         <a href="/details" class="{% if request.path == '/details' %}{{ current_button_style }}{% else %}{{ other_button_style }}{% endif %}">Student Details</a>
         {% if not request.path in ['/login', '/login/finish']%}
