@@ -292,10 +292,23 @@ def home():
     for event in data['calendar']:
         event_date = parse(event['date'])
         
-        if event_date.day == today.day and event_date.month == today.month:
-            # Today's events
-            format_event(event, event_date)
-            events_today.append(event)
+        if not weekend:
+            if event_date.day == today.day and event_date.month == today.month:
+                # Today's events
+                format_event(event, event_date)
+                events_today.append(event)
+        else:
+            if today.weekday() == 5:
+                if event_date.day == (today + timedelta(days=2)).day and event_date.month == (today + timedelta(days=2)).month:
+                    # Weekend events
+                    format_event(event, event_date)
+                    events_today.append(event)
+            elif today.weekday() == 6:
+                if event_date.day == (today + timedelta(days=1)).day and event_date.month == (today + timedelta(days=1)).month:
+                    # Weekend events
+                    format_event(event, event_date)
+                    events_today.append(event)
+                
     
     return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today)
 

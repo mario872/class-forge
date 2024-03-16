@@ -15,13 +15,17 @@
   </header>
 
   <table class="m-12 p-2 table-auto border-2 border-blue-600" id="calendar">
+
+    <!-- Week A Header Start -->
     <tr>
       <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">Week A</th>
       {% for day in range(5) %}
         <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][day]['date'].split(' ')[:3]|join(' ') }}</th>
       {% endfor%}
     </tr>
+    <!-- Week A Header End -->
 
+    <!--Week A Content Start -->
     {% set day_num = namespace(value=0) %}
     {% set period_num = namespace(value=1) %}
     {% for x in range(data['timetable'][0]['periods']|length) %}
@@ -30,20 +34,52 @@
           <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ period_num.value }}</th>
           {% for y in range(5) %}
             {% set day_num.value = y %}
-            <td class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][:5][day_num.value]['periods'][x]['full_name'] }}</td>
+            {% set current_period = data['timetable'][:5][day_num.value]['periods'][x] %}
+            <td class="m-6 border-2 border-blue-600" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
+              <table>
+                <tr>
+                  <td class="pl-1 font-semibold">
+                    {{ current_period.full_name }}
+                  </td>
+                  <td class="pr-1 font-semibold float-right">
+                    {% if current_period.room != None %}
+                      {{ current_period.room }}
+                    {% else %}
+                      No room
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="pl-1">
+                    {{ current_period.name }}
+                  </td>
+                  <td class="pr-1 float-right">
+                  {% if current_period.teacher != None %}
+                    {{ current_period.teacher }}
+                  {% else %}
+                    No teacher
+                  {% endif %}
+                  </td>
+                </tr>
+              </table>
+            </td>
           {% endfor %}
         </tr>
         {% set period_num.value = period_num.value + 1%}
       {% endif %}
     {% endfor %}
+    <!-- Week A Content End -->
 
+    <!-- Week B Header Start -->
     <tr>
       <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">Week B</th>
-      {% for day in range(5, 10) %}
-        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][day]['date'].split(' ')[:3]|join(' ') }}</th>
+      {% for day in range(5) %}
+        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][5+day]['date'].split(' ')[:3]|join(' ') }}</th>
       {% endfor%}
     </tr>
+    <!-- Week B Header End -->
 
+    <!-- Week B Content Start -->
     {% set day_num = namespace(value=0) %}
     {% set period_num = namespace(value=1) %}
     {% for x in range(data['timetable'][6]['periods']|length) %}
@@ -52,12 +88,41 @@
           <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ period_num.value }}</th>
           {% for y in range(5) %}
             {% set day_num.value = y %}
-            <td class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][5:10][day_num.value]['periods'][x]['full_name'] }}</td>
+            {% set current_period = data['timetable'][5:10][day_num.value]['periods'][x] %}
+            <td class="m-6 border-2 border-blue-600" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
+              <table class="h-fit">
+                <tr>
+                  <td class="pl-1 font-semibold">
+                    {{ current_period.full_name }}
+                  </td>
+                  <td class="pr-1 font-semibold float-right">
+                    {% if current_period.room != None %}
+                      {{ current_period.room }}
+                    {% else %}
+                      No room
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="pl-1">
+                    {{ current_period.name }}
+                  </td>
+                  <td class="pr-1 float-right">
+                  {% if current_period.teacher != None %}
+                    {{ current_period.teacher }}
+                  {% else %}
+                    No teacher
+                  {% endif %}
+                  </td>
+                </tr>
+              </table>
+            </td>
           {% endfor %}
         </tr>
         {% set period_num.value = period_num.value + 1%}
       {% endif %}
     {% endfor %}
+    <!-- Week B Content End -->
 
   </table>
 

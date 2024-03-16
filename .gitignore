@@ -155,3 +155,5 @@ lib/*
 .vscode/*
 users/*
 contexts/*
+node_modules/**
+node_modules/*

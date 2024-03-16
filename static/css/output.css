@@ -905,6 +905,15 @@ select {
   height: 2rem;
 }
 
+.h-fit {
+  height: -moz-fit-content;
+  height: fit-content;
+}
+
+.h-20 {
+  height: 5rem;
+}
+
 .min-h-full {
   min-height: 100%;
 }
@@ -1320,12 +1329,24 @@ select {
   outline-style: solid;
 }
 
+.outline-2 {
+  outline-width: 2px;
+}
+
+.outline-1 {
+  outline-width: 1px;
+}
+
 .outline-blue-600 {
   outline-color: #2563eb;
 }
 
 .outline-red-500 {
   outline-color: #ef4444;
+}
+
+.outline-black {
+  outline-color: #000;
 }
 
 .ring-1 {
