@@ -33,10 +33,10 @@
     </div>
     {% set count = namespace(value=0) %}
     {% for notice in data['notices'] %}
-      <div id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...', 'ㅤ')" onmouseover="elementReplace('notice-{{ count.value }}-title', 'ㅤ', '\nReveal content...')" {% endif %} {% if notice['content'] != '' %} class="m-4 hover:outline hover:outline-blue-600 hover:outline-dashed" {% else %} class="m-4 hover:outline hover:outline-indigo-700 hover:outline-dashed" {% endif %} >
-        <h4 id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium text-wrap" {% else %} class="text-indigo-700 font-medium text-wrap" {% endif %}>{{ notice['title'] }}</h4>
+      <div id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...')" onmouseover="elementAppend('notice-{{ count.value }}-title', '\nReveal content...', 'notice-{{ count.value }}-content')" {% endif %} {% if notice['content'] != '' %} class="m-4 hover:outline hover:outline-blue-600 hover:outline-dashed" {% else %} class="m-4 hover:outline hover:outline-indigo-700 hover:outline-dashed" {% endif %} style="	height: fit-content;">
+        <p id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium text-wrap underline" {% else %} class="text-indigo-700 font-medium text-wrap" {% endif %}>{{ notice['title'] }}</p>
         {% if notice['content'] != "" %}
-        <p id="notice-{{ count.value }}-content" class="hidden text-wrap" style="overflow-wrap: break-word;">{{ notice['content'] }}</p>
+        <article id="notice-{{ count.value }}-content" class="hidden text-wrap" style="overflow-wrap: break-word;">{{ notice['content'] }}</article>
         {% endif %}
       </div>
       {% set count.value = count.value + 1 %}

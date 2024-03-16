@@ -3,10 +3,12 @@ from sentralify import sentralify
 import json
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES
 from binascii import hexlify
 import os
 import random
 import markdown
+from base64 import b64decode, b64encode
 from bs4 import BeautifulSoup
 from threading import Timer 
 from dateutil.parser import parse
@@ -24,11 +26,6 @@ timers = {}
 headless = True
 
 app = Flask(__name__)
-
-def md_to_text(md):
-    html = markdown.markdown(md)
-    soup = BeautifulSoup(html, features='html.parser')
-    return soup.get_text()
 
 def decrypt(in_, private_key, test=None):
     try:
@@ -49,11 +46,20 @@ def decrypt(in_, private_key, test=None):
         keys = list(in_.keys())
         for key in keys:
             if key != 'photo_path':
-                out[key] = decrypter.decrypt(in_[key].encode(encoding='latin')).decode(encoding='latin')
+                if key != 'secret_key':
+                    out[key] = decrypter.decrypt(in_[key].encode(encoding='latin')).decode(encoding='latin')
+                else:
+                    out[key] = decrypter.decrypt(in_[key].encode(encoding='latin'))
             else:
                 out[key] = in_[key]
+                
     elif type(in_) == str:
         out = decrypter.decrypt(in_.encode(encoding='latin')).decode(encoding='latin')
+        
+    #elif type(in_) == bytes:
+    #    print(in_)
+    #    out = decrypter.decrypt(in_)
+    #    out = base64.b64decode(out)
     
     return out
 
@@ -78,7 +84,7 @@ def load_user_config(request, username=None, private_key=None):
         with open(f'users/{request.cookies.get("username")}/config.json', 'r') as user_config_file:
             user = json.load(user_config_file)
             
-        user = decrypt(user, request.cookies.get('private_key'), test=user['username'])
+        user = decrypt(user, request.cookies.get('private_key'))
     else:
         with open(f'users/{username}/config.json', 'r') as user_config_file:
             user = json.load(user_config_file)
@@ -95,18 +101,22 @@ def load_user_config(request, username=None, private_key=None):
     
     return user
 
-def load_user_data(user: dict, private_key: str):
+def load_user_data(user: dict, private_key: str, secret_key: str):
     try:
-        with open(f'users/{user["username"]}/data.json', 'r') as data_json:
-            data = ast.literal_eval(data_json.read())
-            return data
+        open(f'users/{user["username"]}/data.json', 'rb').close()
     except FileNotFoundError:
-        repeat_reload(user['username'], private_key)
-        with open(f'users/{user["username"]}/data.json', 'r') as data_json:
-            data = ast.literal_eval(data_json.read())
+        repeat_reload(user['username'], private_key, secret_key)
+    
+    with open(f'users/{user["username"]}/data.json', 'r') as data_json:
+            cipher = AES.new(secret_key.encode('latin1'), AES.MODE_ECB)
+            padded_data = b64decode(data_json.read())
+            padded_data = cipher.decrypt(padded_data)
+            padded_data = padded_data.decode('ascii')
+            data = padded_data.rstrip('~')
+            data = ast.literal_eval(data)
             return data
 
-def repeat_reload(username: str, private_key: str, refresh_time=1800):
+def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800):
     global timers
     
     print('TIMER WENT OFF!')
@@ -118,12 +128,17 @@ def repeat_reload(username: str, private_key: str, refresh_time=1800):
     
     for notice in data['notices']:
         try:
-            notice['text'] = md_to_text(notice['text'])
+            notice['content'] = markdown.markdown((notice['content']))
         except KeyError:
             pass
     
-    with open(f'users/{user["username"]}/data.json', 'w') as data_json:
-        data_json.write(f'{data}')
+    with open(f'users/{user["username"]}/data.json', 'wb') as data_json:
+        padded_data = f'{data}' + ('~' * ((16-len(f'{data}')) % 16))
+        cipher = AES.new(secret_key.encode('latin1'), AES.MODE_ECB)
+        padded_data = padded_data.encode('latin1')
+        padded_data = cipher.encrypt(padded_data)
+        padded_data = b64encode(padded_data)
+        data_json.write(padded_data)
         #json.dump(data, data_json)
     
     print('The timer stopped going off.')
@@ -135,7 +150,7 @@ def repeat_reload(username: str, private_key: str, refresh_time=1800):
         pass
     
     #1800.0 for 30 minutes, 600 for 10 minutes
-    timers[username] = Timer(float(refresh_time), lambda username=username, private_key=private_key: repeat_reload(username, private_key))
+    timers[username] = Timer(float(refresh_time), lambda username=username, private_key=private_key, secret_key=secret_key: repeat_reload(username, private_key, secret_key))
     timers[username].start()
 
 def format_event(event, event_date):
@@ -200,10 +215,13 @@ def finish_login():
         with open(f'users/{user["username"]}/config.json', 'w') as user_config:
             json.dump(encrypted_user, user_config)
             
-        response = make_response(render_template('login_complete.jinja', user=fake_user))
-        response.set_cookie('username', data['username'], secure=True, expires=datetime(day=datetime.now().day + 3, month=datetime.now().month, year=datetime.now().year))
-        response.set_cookie('private_key', private_key.export_key().decode(), secure=True, expires=datetime(day=datetime.now().day + 3, month=datetime.now().month, year=datetime.now().year))
+        secret_key = os.urandom(24)
             
+        response = make_response(render_template('login_complete.jinja', user=fake_user))
+        response.set_cookie('secret_key', secret_key.decode('latin1'), secure=True)
+        response.set_cookie('username', data['username'], secure=True)
+        response.set_cookie('private_key', private_key.export_key().decode(), secure=True)
+        
         return response
     
     else:
@@ -219,7 +237,7 @@ def home():
     if not user:
         return redirect('/login')
     
-    data = load_user_data(user, request.cookies.get('private_key'))
+    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
     
     three_day_timetable = []
     if not datetime.now().weekday() in [0, 4, 5, 6]:
@@ -287,7 +305,7 @@ def timetable():
     if not user:
         return redirect('/login')
     
-    data = load_user_data(user, request.cookies.get('private_key'))
+    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
     
     return render_template('timetable.jinja', user=user, data=data)
 
@@ -335,57 +353,12 @@ def details():
 
 @app.route('/reload')
 def reload():
-    """
-    try:
-        username = request.args['username']
-        private_key = request.args['state'] # To throw off hackers, probably won't work
-        
-        UandP = {'username': username, 'private_key': private_key}
-        
-        Timer(10.0, lambda UandP=UandP: redirect(f'/reload?username={UandP["username"]}&state={UandP["private_key"]}')).start()
-        url_present = True
-        print('We got a reload by Timer!')
-    except KeyError:
-        url_present = False
-    
-    if not url_present:
-        if not cookies_present(request):
-            return redirect('/login')
-    
-        user = load_user_config(request)
-    
-    else:
-        print(urllib.parse.unquote_plus(request.args['state']))
-        user = load_user_config(None, username=request.args['username'], private_key=urllib.parse.unquote_plus(request.args['state'].decode(encoding='latin')))
-    
-    if not user:
-        return redirect('/login')
-    
-    user['headless'] = True
-    
-    data = sentralify(user)
-    
-    for notice in data['notices']:
-        try:
-            notice['text'] = md_to_text(notice['text'])
-        except KeyError:
-            pass
-    
-    with open(f'users/{user["username"]}/data.json', 'w') as data_json:
-        json.dump(data, data_json)
-    
-    if not url_present:
-        return redirect('/dashboard')
-    else:
-        return
-    """
-    
     if not cookies_present(request):
         return redirect('/login')
     
     user = load_user_config(request)
     
-    repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'))
+    repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'), secret_key=request.cookies.get('secret_key'))
     
     return redirect('/dashboard')
     

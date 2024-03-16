@@ -2,7 +2,7 @@
 
 FROM python:3.11-slim-bullseye
 LABEL maintainer="jamesaglynn10@gmail.com"
-LABEL version="0.14"
+LABEL version="0.15"
 LABEL description="This is the docker image for better-sentral"
 
 ARG DEBIAN_FRONTEND=noninteractive
