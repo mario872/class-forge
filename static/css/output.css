@@ -1679,6 +1679,10 @@ input[type="range"]::-ms-fill-lower {
   margin: 1.5rem;
 }
 
+.m-10 {
+  margin: 2.5rem;
+}
+
 .mx-12 {
   margin-left: 3rem;
   margin-right: 3rem;
