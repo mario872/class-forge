@@ -1,5 +1,5 @@
 import subprocess
-docker_v = 0.16
+docker_v = 0.17
 
 commands = [f'sudo docker build . -t solderingiron86/better-sentral:{docker_v}',
             f'sudo docker run --name better-sentral-{docker_v} -p 5000:5000 solderingiron86/better-sentral:{docker_v}',
