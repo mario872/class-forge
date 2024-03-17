@@ -1,3 +1,20 @@
+"""
+Copyright (C) 2024  James Glynn
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
+"""
+
 from flask import *
 from sentralify import sentralify
 import json
@@ -136,7 +153,7 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
     with open(f'users/{user["username"]}/data.json', 'wb') as data_json:
         padded_data = f'{data}' + ('~' * ((16-len(f'{data}')) % 16))
         cipher = AES.new(secret_key.encode('latin1'), AES.MODE_ECB)
-        padded_data = padded_data.encode('latin1')
+        padded_data = padded_data.encode('ascii')
         padded_data = cipher.encrypt(padded_data)
         padded_data = b64encode(padded_data)
         data_json.write(padded_data)
@@ -183,6 +200,12 @@ def login():
 def finish_login():
     data = request.form
     
+    if data.get('privacyPolicyCheckbox') and data.get('tosCheckbox'):
+        pass
+    else:
+        return redirect('/login?message=Please+accept+the+privacy+policy+and+the+terms+of+service.')
+        
+    
     os.makedirs('users/' + data['username'], exist_ok=True)
 
     private_key = RSA.generate(2048)
@@ -226,7 +249,10 @@ def finish_login():
         return response
     
     else:
-        return redirect('/login?message=Sorry,+those+login+details+are+incorrect')
+        if data.get('privacyPolicyCheckbox') and data.get('tosCheckbox'):
+            return redirect('/login?message=Sorry,+those+login+details+are+incorrect')
+        else:
+            return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy+policy+and+the+terms+of+service.')
 
 @app.route('/dashboard')
 def home():    
@@ -377,6 +403,16 @@ def reload():
     repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'), secret_key=request.cookies.get('secret_key'))
     
     return redirect('/dashboard')
-    
+
+@app.route('/privacy_policy')
+def privacy_policy():
+    privacy_policy = markdown.markdown(open('./static/markdown/privacy-policy.md', 'r').read())
+    return render_template('privacy_policy.jinja', privacy_policy=privacy_policy, user=fake_user)
+
+@app.route('/tos')
+def tos():
+    tos = markdown.markdown(open('./static/markdown/terms-of-service.md', 'r').read())
+    return render_template('tos.jinja', tos=tos, user=fake_user)
+
 if __name__ == '__main__':
     app.run('0.0.0.0', 5000, use_evalex=False)
