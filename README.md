@@ -1,5 +1,5 @@
 # class-forge
-This website aims to make Sentral look prettier, but completely scrapping the old look, and remaking it grid by grid, and div by div.
+This website aims to make Sentral look prettier, by completely scrapping the old look, and remaking it grid by grid, and div by div.
 
 Soon to be features:
  - [ ] Add junk / news section
