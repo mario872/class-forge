@@ -179,6 +179,35 @@ def format_event(event, event_date):
     event['date'] = event_date.strftime('%d/%m/%Y')
     # Assuming title cleaning is not needed for now, comment it out
     # event['title'] = event['title'].replace('Events: ', '')
+    
+def render_markdown_on_page(markdown_name: str):
+    mrkdown = markdown.markdown(open(f'./static/markdown/{markdown_name}.md', 'r').read())
+    return render_template_string("""
+           <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <link href="{{{{url_for('static',filename='css/output.css')}}}}" rel="stylesheet">
+                {{% include 'partials/header.jinja' with context %}}
+            </head>
+            <body>
+                <!-- Start of {0}.jinja -->
+            <header class="bg-white shadow">
+                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <h1 class="text-3xl font-bold tracking-tight text-gray-900">{1}</h1>
+                </div>
+            </header>
+
+            <article class="prose prose-slate m-6 p-2 mx-auto max-w-7xl">{2}</article>
+
+            <!-- End of {0}.jinja -->
+            {{% include 'partials/footer.jinja' with context %}}
+            </body>
+            </html>
+           
+           
+           """.format(markdown_name, markdown_name.title().replace('-', ' ').replace('_', ' '), mrkdown), user=fake_user)
 
 @app.route('/')
 def one():
@@ -187,7 +216,7 @@ def one():
     else:
         return redirect('/login')
     
-@app.route('/login')
+@app.route('/login/')
 def login():
     try:
         message = request.args.get('message')
@@ -196,7 +225,7 @@ def login():
 
     return render_template('login.jinja', user=fake_user, message=message)
 
-@app.route('/login/finish', methods=['POST'])
+@app.route('/login/finish/', methods=['POST'])
 def finish_login():
     data = request.form
     
@@ -254,7 +283,7 @@ def finish_login():
         else:
             return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy+policy+and+the+terms+of+service.')
 
-@app.route('/dashboard')
+@app.route('/dashboard/')
 def home():    
     if not cookies_present(request):
         return redirect('/login')
@@ -338,7 +367,7 @@ def home():
     
     return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today)
 
-@app.route('/timetable')
+@app.route('/timetable/')
 def timetable():
     if not cookies_present(request):
         return redirect('/login')
@@ -356,7 +385,7 @@ def timetable():
     
     return render_template('timetable.jinja', user=user, data=data)
 
-@app.route('/calendar')
+@app.route('/calendar/')
 def calendar():
     if not cookies_present(request):
         return redirect('/login')
@@ -373,7 +402,7 @@ def calendar():
     
     return render_template('calendar.jinja', user=user)
 
-@app.route('/details')
+@app.route('/details/')
 def details():
     if not cookies_present(request):
         return redirect('/login')
@@ -390,7 +419,7 @@ def details():
     
     return render_template('details.jinja', user=user)
 
-@app.route('/reload')
+@app.route('/reload/')
 def reload():
     if not cookies_present(request):
         return redirect('/login')
@@ -404,15 +433,13 @@ def reload():
     
     return redirect('/dashboard')
 
-@app.route('/privacy_policy')
+@app.route('/privacy_policy/')
 def privacy_policy():
-    privacy_policy = markdown.markdown(open('./static/markdown/privacy-policy.md', 'r').read())
-    return render_template('privacy_policy.jinja', privacy_policy=privacy_policy, user=fake_user)
+    return render_markdown_on_page('privacy-policy')
 
-@app.route('/tos')
+@app.route('/tos/')
 def tos():
-    tos = markdown.markdown(open('./static/markdown/terms-of-service.md', 'r').read())
-    return render_template('tos.jinja', tos=tos, user=fake_user)
+    return render_markdown_on_page('terms-of-service')
 
 if __name__ == '__main__':
     app.run('0.0.0.0', 5000, use_evalex=False)
