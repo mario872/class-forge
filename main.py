@@ -134,7 +134,7 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
             data = ast.literal_eval(data)
             return data
 
-def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800):
+def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800, request=None):
     global timers
     
     print('TIMER WENT OFF!')
@@ -149,6 +149,14 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
             notice['content'] = markdown.markdown((notice['content']))
         except KeyError:
             pass
+    
+    if secret_key == None:
+        secret_key = request.cookies.get('secret_key')
+        if secret_key == None:
+            with open(f'users/{user["username"]}/secret_key', 'rb') as secret_key_file:
+                secret_key = secret_key_file.read().decode('utf-8')
+    
+    os.remove(f'users/{user["username"]}/secret_key')
     
     with open(f'users/{user["username"]}/data.json', 'wb') as data_json:
         padded_data = f'{data}' + ('~' * ((16-len(f'{data}')) % 16))
@@ -269,7 +277,10 @@ def finish_login():
             json.dump(encrypted_user, user_config)
             
         secret_key = os.urandom(24)
-            
+        
+        with open('./users/' + data['username'] + '/secret_key', 'wb') as secret_key_file:
+            secret_key_file.write(secret_key) 
+        
         response = make_response(render_template('login_complete.jinja', user=fake_user))
         response.set_cookie('secret_key', secret_key.decode('latin1'), secure=True)
         response.set_cookie('username', data['username'], secure=True)
@@ -327,23 +338,6 @@ def home():
     today = datetime.now()
     weekend = today.weekday() in [5, 6]
 
-    """
-    for event in data['calendar']:
-        event_date = parse(event['date'])
-        
-        if not weekend and event_date.day == today.day and event_date.month == today.month:
-            # Today's events
-            print(event_date.day, event_date.month, today.day, today.month)
-            format_event(event, event_date)
-            events_today.append(event)
-        elif weekend:
-            offset_days = 1 if weekend == 6 else 2
-            if event_date.day == (today + timedelta(days=offset_days)).day and event_date.month == (today + timedelta(days=offset_days)).month:
-                # Weekend events
-                print(event_date.day, event_date.month, today.day, today.month)
-                format_event(event, event_date)
-                events_today.append(event)
-    """
     for event in data['calendar']:
         event_date = parse(event['date'])
         
@@ -398,7 +392,7 @@ def calendar():
     if not user:
         return redirect('/login')
     
-    return redirect('/dashboard')
+    #return redirect('/dashboard')
     
     return render_template('calendar.jinja', user=user)
 
@@ -429,7 +423,7 @@ def reload():
     except ValueError:
         return redirect('/login')
     
-    repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'), secret_key=request.cookies.get('secret_key'))
+    repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'), secret_key=request.cookies.get('secret_key'), request=request)
     
     return redirect('/dashboard')
 
