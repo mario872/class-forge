@@ -180,7 +180,7 @@ def format_event(event, event_date):
     # Assuming title cleaning is not needed for now, comment it out
     # event['title'] = event['title'].replace('Events: ', '')
     
-def render_markdown_on_page(markdown_name: str):
+def render_markdown_page(markdown_name: str):
     mrkdown = markdown.markdown(open(f'./static/markdown/{markdown_name}.md', 'r').read())
     return render_template_string("""
            <!DOCTYPE html>
@@ -435,11 +435,11 @@ def reload():
 
 @app.route('/privacy_policy/')
 def privacy_policy():
-    return render_markdown_on_page('privacy-policy')
+    return render_markdown_page('privacy-policy')
 
 @app.route('/tos/')
 def tos():
-    return render_markdown_on_page('terms-of-service')
+    return render_markdown_page('terms-of-service')
 
 if __name__ == '__main__':
     app.run('0.0.0.0', 5000, use_evalex=False)
