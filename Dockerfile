@@ -5,6 +5,8 @@ LABEL maintainer="jamesaglynn10@gmail.com"
 LABEL version="0.17"
 LABEL description="This is the docker image for better-sentral"
 
+ENV IN_DOCKER true
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update

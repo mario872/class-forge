@@ -7,6 +7,7 @@
     {% include 'partials/header.jinja' with context %}
 </head>
 <body>
+
     <!-- Start of calendar.jinja -->
   <header class="bg-white shadow">
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -14,7 +15,33 @@
     </div>
   </header>
 
-    <!-- End of calendar.jinja -->
+  <table class="m-12 p-2 table-auto border-2 border-blue-600" id="calendar">
+    <tr class="border-2 border-blue-600">
+      <th class="border-2 border-blue-600"></th>
+      <th class="border-2 border-blue-600">Monday</th>
+      <th class="border-2 border-blue-600">Tuesday</th>
+      <th class="border-2 border-blue-600">Wednesday</th>
+      <th class="border-2 border-blue-600">Thursday</th>
+      <th class="border-2 border-blue-600">Friday</th>
+    </tr>
+
+    {% for week in data['calendar'] %}
+    <tr class="border-2 border-blue-600">
+      <th class="border-2 border-blue-600">Week {{ data['calendar'].index(week) + 1}}</th>
+      {% for day in range(5) %}
+        <td class="border-2 border-blue-600 bg-blue-100">
+          {% for event in week[day] %}
+            <div {% if 'Event' in event.title and not 'Week' in event.title %} class="p-2 m-2 rounded border-2 border-green-400 bg-green-100" {% elif 'Week' in event.title %} class="p-2 m-2 rounded border-2 border-yellow-400 bg-yellow-100" {% elif "Assessment" in event.title %} class="p-2 m-2 rounded border-2 border-red-400 bg-red-100" {% endif %}>
+              <p>{{ event.title }}</p>
+            </div>
+          {% endfor %}
+        </td>
+      {% endfor %}
+
+    {% endfor %}
+
+  </table>
+  <!-- End of calendar.jinja -->
 {% include 'partials/footer.jinja' with context %}
 </body>
 </html>

@@ -32,6 +32,14 @@ from dateutil.parser import parse
 from datetime import datetime, timedelta
 import ast
 
+#################################################################################################
+# Variables Setup
+
+in_docker = os.environ.get('IN_DOCKER', False) # Detects if we are testing, or in a production docker container
+override = False # Whether to override to test production version
+if not in_docker and override:
+    in_docker = True
+
 fake_user = {'username': 'your.name',
              'password': 'your_password',
              'state': 'nsw',
@@ -43,6 +51,9 @@ timers = {}
 headless = True
 
 app = Flask(__name__)
+
+################################################################################################
+# Functions
 
 def decrypt(in_, private_key, test=None):
     try:
@@ -216,6 +227,9 @@ def render_markdown_page(markdown_name: str):
            
            
            """.format(markdown_name, markdown_name.title().replace('-', ' ').replace('_', ' '), mrkdown), user=fake_user)
+
+#################################################################################################
+# Routes for server
 
 @app.route('/')
 def one():
@@ -394,7 +408,66 @@ def calendar():
     
     #return redirect('/dashboard')
     
-    return render_template('calendar.jinja', user=user)
+    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
+    
+    # Organise calendar list by date
+    data['calendar'] = sorted(data['calendar'], key=lambda x: parse(x['date']))
+    
+    # Get number of weeks from calendar list
+    total_days = parse(data['calendar'][-1]['date']) - parse(data['calendar'][0]['date'])
+    weeks = (total_days.days // 7) + 1 # Day one is a monday, last day is a friday, makes one week less than it should be
+    
+    # Put each day into it's own list
+    per_day_calendar = []
+    current_day_list = []
+    current_day = parse(data['calendar'][0]['date'])
+    
+    for x in range(len(data['calendar'])):
+        if parse(data['calendar'][x]['date']).day == current_day.day and parse(data['calendar'][x]['date']).month == current_day.month:
+            current_day_list.append(data['calendar'][x])
+
+        else:
+            per_day_calendar.append(current_day_list)
+            current_day_list = [data['calendar'][x]]
+            current_day = parse(data['calendar'][x]['date'])
+    
+    per_day_calendar.append(current_day_list)
+    
+    # Put each week into it's own list in data['calendar']
+    per_week_calendar = []
+    current_week = [] # Current week calendar
+    days_in_week = [0, 1 , 2, 3, 4]
+    last_day_in_week = -1
+    for y in range(len(per_day_calendar)): # Total number of days in per_day_calendar
+        # If it is a valid weekday of school, and it is greater than the last recorded day of the week, that means we're still in the same week as before
+        print(last_day_in_week)
+        if parse(per_day_calendar[y][0]['date']).weekday() in days_in_week and parse(per_day_calendar[y][0]['date']).weekday() > last_day_in_week:
+            current_week.append(per_day_calendar[y])
+            last_day_in_week = parse(per_day_calendar[y][0]['date']).weekday()
+        else:
+            print('New Week!')
+            per_week_calendar.append(current_week)
+            current_week = [per_day_calendar[y]]
+            last_day_in_week = parse(per_day_calendar[y][0]['date']).weekday()
+            
+            print('Total weeks is ' + str(len(per_week_calendar)))
+            
+    print('New Week!')
+    per_week_calendar.append(current_week)
+    current_week = [per_day_calendar[y]]
+    last_day_in_week = parse(per_day_calendar[y][0]['date']).weekday()
+        
+    print('Total weeks is ' + str(len(per_week_calendar)))
+                
+    
+    data['calendar'] = per_week_calendar
+    print(per_week_calendar[0])
+    print(len(per_week_calendar))
+      
+    if in_docker:
+        return redirect('/dashboard')
+    else:
+        return render_template('calendar.jinja', user=user, data=data, weeks=weeks)
 
 @app.route('/details/')
 def details():
@@ -409,9 +482,10 @@ def details():
     if not user:
         return redirect('/login')
     
-    return redirect('/dashboard')
-    
-    return render_template('details.jinja', user=user)
+    if in_docker:
+        return redirect('/dashboard')
+    else:
+        return render_template('details.jinja', user=user)
 
 @app.route('/reload/')
 def reload():
@@ -434,6 +508,13 @@ def privacy_policy():
 @app.route('/tos/')
 def tos():
     return render_markdown_page('terms-of-service')
+
+@app.route('/how_it_works/')
+def how_it_works():
+    return render_markdown_page('how-it-works')
+
+#################################################################################################
+# Main Program / Loop
 
 if __name__ == '__main__':
     app.run('0.0.0.0', 5000, use_evalex=False)
