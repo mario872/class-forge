@@ -517,4 +517,4 @@ def how_it_works():
 # Main Program / Loop
 
 if __name__ == '__main__':
-    app.run('0.0.0.0', 5000, use_evalex=False)
+    app.run('0.0.0.0', 5000, debug=True, use_evalex=False)
