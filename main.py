@@ -245,7 +245,7 @@ def login():
     except KeyError:
         message = ''
 
-    return render_template('login.jinja', user=fake_user, message=message)
+    return render_template('login.jinja', user=fake_user, message=message, request=request)
 
 @app.route('/login/finish/', methods=['POST'])
 def finish_login():
@@ -295,7 +295,7 @@ def finish_login():
         with open('./users/' + data['username'] + '/secret_key', 'wb') as secret_key_file:
             secret_key_file.write(secret_key) 
         
-        response = make_response(render_template('login_complete.jinja', user=fake_user))
+        response = make_response(render_template('login_complete.jinja', user=fake_user, request=request))
         response.set_cookie('secret_key', secret_key.decode('latin1'), secure=True)
         response.set_cookie('username', data['username'], secure=True)
         response.set_cookie('private_key', private_key.export_key().decode(), secure=True)
@@ -373,7 +373,7 @@ def home():
                     events_today.append(event)
                 
     
-    return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today)
+    return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today, request=request)
 
 @app.route('/timetable/')
 def timetable():
@@ -391,7 +391,7 @@ def timetable():
     
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
     
-    return render_template('timetable.jinja', user=user, data=data)
+    return render_template('timetable.jinja', user=user, data=data, request=request)
 
 @app.route('/calendar/')
 def calendar():
@@ -464,10 +464,7 @@ def calendar():
     print(per_week_calendar[0])
     print(len(per_week_calendar))
       
-    if in_docker:
-        return redirect('/dashboard')
-    else:
-        return render_template('calendar.jinja', user=user, data=data, weeks=weeks)
+    return render_template('calendar.jinja', user=user, data=data, weeks=weeks, request=request)
 
 @app.route('/details/')
 def details():
@@ -485,7 +482,7 @@ def details():
     if in_docker:
         return redirect('/dashboard')
     else:
-        return render_template('details.jinja', user=user)
+        return render_template('details.jinja', user=user, request=request)
 
 @app.route('/reload/')
 def reload():
@@ -517,4 +514,7 @@ def how_it_works():
 # Main Program / Loop
 
 if __name__ == '__main__':
-    app.run('0.0.0.0', 5000, debug=True, use_evalex=False)
+    if in_docker:
+        app.run('0.0.0.0', 5000, use_evalex=False)
+    else:
+        app.run('0.0.0.0', 5000, debug=True, use_evalex=False)
