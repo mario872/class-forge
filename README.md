@@ -13,6 +13,7 @@ Soon to be features:
  - [ ] See awards
  - [x] Use encryption to store passwords (see, I thought about this!)
  - [x] Use encryption to store timetable, attendance etc.
+ - [ ] Add Dark Mode
 
 Long term features:
  - [ ] Search for when your next period of a certain subject is
@@ -22,4 +23,4 @@ Long term features:
  - [ ] Be able to upload your own profile photo
 
 ### What am I working on right now?
-Trying to develop other pages while still fixing up the main dashboard
+Developing the Details Page, while working on the main dashboard
