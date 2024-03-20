@@ -7,19 +7,6 @@
     <script src="/static/index.js"></script>
     {% include 'partials/header.jinja' with context %}
 
-  <script>
-  function fetch_timetable_css(elementID) {
-    let element = document.getElementById(elementID);
-    element.disabled = true;
-    element.innerText = 'Fetching timetable...';
-    const classes = ['from-blue-500', 'via-blue-600', 'to-blue-700'];
-    for (class_id in classes) {
-        element.classList.remove(class_id)
-    }
-    element.classList.add('blue-500')
-}
-  </script>
-
 </head>
 <body>
 

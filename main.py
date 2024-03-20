@@ -31,6 +31,7 @@ from threading import Timer
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 import ast
+from werkzeug.routing import BaseConverter
 
 #################################################################################################
 # Variables Setup
@@ -54,6 +55,13 @@ app = Flask(__name__)
 
 ################################################################################################
 # Functions
+
+class RegexConverter(BaseConverter):
+    def __init__(self, url_map, *items):
+        super(RegexConverter, self).__init__(url_map)
+        self.regex = items[0]
+
+app.url_map.converters['regex'] = RegexConverter
 
 def decrypt(in_, private_key, test=None):
     try:
@@ -136,17 +144,38 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
     except FileNotFoundError:
         repeat_reload(user['username'], private_key, secret_key)
     
+    do_not_encode = False
+    if secret_key == None:
+        secret_key = request.cookies.get('secret_key')
+        if secret_key == None:
+            try:
+                with open(f'users/{user["username"]}/secret_key', 'rb') as secret_key_file:
+                    secret_key = secret_key_file.read()
+                    if not in_docker:
+                        print('Secret Key is ' + str(secret_key))
+                    do_not_encode = True
+            except FileNotFoundError:
+                print('Error, I don\'t know what to do here! In load_user_data.')
+    try:
+        os.remove(f'users/{user["username"]}/secret_key')
+    except FileNotFoundError:
+        pass
+    
     with open(f'users/{user["username"]}/data.json', 'r') as data_json:
+        if do_not_encode:
+            cipher = AES.new(secret_key, AES.MODE_ECB)
+        else:
             cipher = AES.new(secret_key.encode('latin1'), AES.MODE_ECB)
-            padded_data = b64decode(data_json.read())
-            padded_data = cipher.decrypt(padded_data)
-            padded_data = padded_data.decode('ascii')
-            data = padded_data.rstrip('~')
-            data = ast.literal_eval(data)
-            return data
+        padded_data = b64decode(data_json.read())
+        padded_data = cipher.decrypt(padded_data)
+        padded_data = padded_data.decode('ascii')
+        data = padded_data.rstrip('~')
+        data = ast.literal_eval(data)
+        return data
 
 def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800, request=None):
     global timers
+    global add_cookie
     
     print('TIMER WENT OFF!')
     user = load_user_config(None, username=username, private_key=private_key)
@@ -161,17 +190,30 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
         except KeyError:
             pass
     
+    do_not_encode = False
     if secret_key == None:
         secret_key = request.cookies.get('secret_key')
         if secret_key == None:
-            with open(f'users/{user["username"]}/secret_key', 'rb') as secret_key_file:
-                secret_key = secret_key_file.read().decode('utf-8')
+            try:
+                with open(f'users/{user["username"]}/secret_key', 'rb') as secret_key_file:
+                    secret_key = secret_key_file.read()
+                    do_not_encode = True
+                    if not in_docker:
+                        print('Secret Key is'+ str(secret_key) + 'In repeat_reload.')
+            except FileNotFoundError:
+                print('Error, I don\'t know what to do here!')
     
-    os.remove(f'users/{user["username"]}/secret_key')
+    try:
+        os.remove(f'users/{user["username"]}/secret_key')
+    except FileNotFoundError:
+        pass
     
     with open(f'users/{user["username"]}/data.json', 'wb') as data_json:
         padded_data = f'{data}' + ('~' * ((16-len(f'{data}')) % 16))
-        cipher = AES.new(secret_key.encode('latin1'), AES.MODE_ECB)
+        if do_not_encode:
+            cipher = AES.new(secret_key, AES.MODE_ECB)
+        else:
+            cipher = AES.new(secret_key.encode('latin1'), AES.MODE_ECB)
         padded_data = padded_data.encode('ascii')
         padded_data = cipher.encrypt(padded_data)
         padded_data = b64encode(padded_data)
@@ -238,7 +280,7 @@ def one():
     else:
         return redirect('/login')
     
-@app.route('/login/')
+@app.route('/login')
 def login():
     try:
         message = request.args.get('message')
@@ -247,7 +289,7 @@ def login():
 
     return render_template('login.jinja', user=fake_user, message=message, request=request)
 
-@app.route('/login/finish/', methods=['POST'])
+@app.route('/login/finish', methods=['POST'])
 def finish_login():
     data = request.form
     
@@ -308,7 +350,7 @@ def finish_login():
         else:
             return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy+policy+and+the+terms+of+service.')
 
-@app.route('/dashboard/')
+@app.route('/dashboard')
 def home():    
     if not cookies_present(request):
         return redirect('/login')
@@ -375,7 +417,7 @@ def home():
     
     return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today, request=request)
 
-@app.route('/timetable/')
+@app.route('/timetable')
 def timetable():
     if not cookies_present(request):
         return redirect('/login')
@@ -393,7 +435,7 @@ def timetable():
     
     return render_template('timetable.jinja', user=user, data=data, request=request)
 
-@app.route('/calendar/')
+@app.route('/calendar')
 def calendar():
     if not cookies_present(request):
         return redirect('/login')
@@ -440,33 +482,23 @@ def calendar():
     last_day_in_week = -1
     for y in range(len(per_day_calendar)): # Total number of days in per_day_calendar
         # If it is a valid weekday of school, and it is greater than the last recorded day of the week, that means we're still in the same week as before
-        print(last_day_in_week)
         if parse(per_day_calendar[y][0]['date']).weekday() in days_in_week and parse(per_day_calendar[y][0]['date']).weekday() > last_day_in_week:
             current_week.append(per_day_calendar[y])
             last_day_in_week = parse(per_day_calendar[y][0]['date']).weekday()
         else:
-            print('New Week!')
             per_week_calendar.append(current_week)
             current_week = [per_day_calendar[y]]
             last_day_in_week = parse(per_day_calendar[y][0]['date']).weekday()
             
-            print('Total weeks is ' + str(len(per_week_calendar)))
-            
-    print('New Week!')
     per_week_calendar.append(current_week)
     current_week = [per_day_calendar[y]]
     last_day_in_week = parse(per_day_calendar[y][0]['date']).weekday()
-        
-    print('Total weeks is ' + str(len(per_week_calendar)))
-                
     
     data['calendar'] = per_week_calendar
-    print(per_week_calendar[0])
-    print(len(per_week_calendar))
       
     return render_template('calendar.jinja', user=user, data=data, weeks=weeks, request=request)
 
-@app.route('/details/')
+@app.route('/details')
 def details():
     if not cookies_present(request):
         return redirect('/login')
@@ -484,7 +516,7 @@ def details():
     else:
         return render_template('details.jinja', user=user, request=request)
 
-@app.route('/reload/')
+@app.route('/reload')
 def reload():
     if not cookies_present(request):
         return redirect('/login')
@@ -498,15 +530,15 @@ def reload():
     
     return redirect('/dashboard')
 
-@app.route('/privacy_policy/')
+@app.route('/privacy_policy')
 def privacy_policy():
     return render_markdown_page('privacy-policy')
 
-@app.route('/tos/')
+@app.route('/tos')
 def tos():
     return render_markdown_page('terms-of-service')
 
-@app.route('/how_it_works/')
+@app.route('/how_it_works')
 def how_it_works():
     return render_markdown_page('how-it-works')
 
