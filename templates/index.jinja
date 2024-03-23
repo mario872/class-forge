@@ -27,29 +27,30 @@
   <div id="grid" class="flex top-0 m-6 mb-12 grid grid-cols-1 md:grid-cols-3">
 
     <!-- Notices  -->
-    <div id="notices-grid" class="m-6 border-2 border-blue-600 grid grid-cols-1">
-    <div class="ml-0">
-      <p class="pl-6 font-bold">Notices</p>
-    </div>
+    <table id="notices-table" class="h-[75vh] table-auto m-6 border-2 border-blue-600">
+    <th class="pl-6 font-bold border-2 border-blue-600 h-5">Notices</th>
     {% set count = namespace(value=0) %}
     {% for notice in data['notices'] %}
-      <div id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...')" onmouseover="elementAppend('notice-{{ count.value }}-title', '\nReveal content...', 'notice-{{ count.value }}-content')" {% endif %} {% if notice['content'] != '' %} class="m-4 hover:outline hover:outline-blue-600 hover:outline-dashed" {% else %} class="m-4 hover:outline hover:outline-indigo-700 hover:outline-dashed" {% endif %} style="	height: fit-content;">
+    <tr class="border-x-2 border-t-2 border-blue-600">
+      <td id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...')" onmouseover="elementAppend('notice-{{ count.value }}-title', '\nReveal content...', 'notice-{{ count.value }}-content')" {% endif %} {% if notice['content'] != '' %} class="m-4" {% else %} class="m-4" {% endif %} style="	height: fit-content;">
         <p id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium text-wrap underline" {% else %} class="text-indigo-700 font-medium text-wrap" {% endif %}>{{ notice['title'] }}</p>
-        {% if notice['content'] != "" %}
-        <article id="notice-{{ count.value }}-content" class="hidden text-wrap" style="overflow-wrap: break-word;">{{ notice['content'] }}</article>
-        {% endif %}
-      </div>
+      </td>
+    </tr>
+    {% if notice['content'] != "" %}
+    <tr>
+      <td><article id="notice-{{ count.value }}-content" class="hidden text-wrap" style="overflow-wrap: break-word;">{{ notice['content'] }}</article></td>
+    </tr>
+    {% endif %}
       {% set count.value = count.value + 1 %}
     {% endfor %}
-    </div>
-
+    </table>
     <!-- Timetable -->
-    <div id="timetable-grid" class="flex top-0 m-6 grid grid-cols-1">
+    <div id="timetable-grid" class="h-[75vh] flex top-0 m-6 grid grid-cols-1">
     {% set count = namespace(value=1) %}
     <table class="table-auto border-2 border-blue-600">
     {% for day in tdt %}
       <th class="m-6 border-2 border-blue-600 text-center border-collapse">ㅤ</th>
-      <th class="m-6 w-full border-2 border-blue-600 text-center border-collapse">Periods for {{ day['date'].split(' ')[:3]|join(' ') }}</th>
+      <th class="m-6 w-full border-2 border-blue-600 text-center border-collapse">Timetable for {{ day['date'].split(' ')[:3]|join(' ') }}</th>
         {% set period_num = namespace(value=1) %}
         {% for period in day['periods'] %}
           {% if period.full_name != None %}
@@ -93,7 +94,7 @@
     </div>
 
     <!-- Calendar -->
-    <div id="calendar-grid" class="flex top-0 m-6">
+    <div id="calendar-grid" class="h-[75vh] flex top-0 m-6">
       {% set count = namespace(value=1) %}
 
       <table class="table-auto border-2 border-blue-600 sm:w-full">

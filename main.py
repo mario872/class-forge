@@ -27,35 +27,49 @@ import random
 import markdown
 from base64 import b64decode, b64encode
 from bs4 import BeautifulSoup
-from threading import Timer 
+import threading
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 import ast
 from werkzeug.routing import BaseConverter
+import sys
 
 #################################################################################################
 # Variables Setup
 
+headless = True
 in_docker = os.environ.get('IN_DOCKER', False) # Detects if we are testing, or in a production docker container
 override = False # Whether to override to test production version
-if not in_docker and override:
+
+auto_off = 600.0 # Whether to automatically turn off the server after a certain period of time, currently 10 minutes
+
+if in_docker or override:
+    auto_off = None
+    headless = True
+
+if auto_off != None:
+    auto_off_timer = threading.Timer(auto_off, lambda: os._exit(1))
+    auto_off_timer.daemon = True
+    auto_off_timer.start()
+    
+if override:
     in_docker = True
 
+# A template user to use, when the user is not signed in, used on login screen, tos, etc.
 fake_user = {'username': 'your.name',
              'password': 'your_password',
              'state': 'nsw',
              'base_ur': 'caringbahhs',
-             'photo_path': 'https://img.apmcdn.org/768cb350c59023919f564341090e3eea4970388c/square/72dd92-20180309-rick-astley.jpg'}
+             'photo_path': 'static/Rick Astley.jpg'}
 
-timers = {}
-
-headless = True
+timers = {} # Used to store all of the timers used to automatically scrape Sentral
 
 app = Flask(__name__)
 
 ################################################################################################
 # Functions
 
+# Unused regex converter for url routing
 class RegexConverter(BaseConverter):
     def __init__(self, url_map, *items):
         super(RegexConverter, self).__init__(url_map)
@@ -64,6 +78,18 @@ class RegexConverter(BaseConverter):
 app.url_map.converters['regex'] = RegexConverter
 
 def decrypt(in_, private_key, test=None):
+    """
+    Used to decrypt every item in a dict, or a str
+
+    Args:
+        in_ (dict or str): The encrypted dict / str to be decrypted
+        private_key str: The private key sued to decrypt the encrypted dict or str
+        test (str, optional): A test str to be decrypted. Defaults to None.
+
+    Returns:
+        dict or str: A dict or str, with the decrypted values in it
+    """
+    
     try:
         private_key = RSA.import_key(private_key.encode())
     except AttributeError:
@@ -100,6 +126,16 @@ def decrypt(in_, private_key, test=None):
     return out
 
 def cookies_present(request):
+    """
+    A function to check if cookies are present in the user's browser session.
+
+    Args:
+        request: The request given by the app routing function, contains cookies set in it
+
+    Returns:
+        bool: Whether cookies are set or not.
+    """
+    
     username = request.cookies.get('username')
     password = request.cookies.get('private_key')
     secret_key = request.cookies.get('secret_key')
@@ -117,6 +153,17 @@ def cookies_present(request):
         return False
     
 def load_user_config(request, username=None, private_key=None):
+    """
+    A function that loads the user config using cookies stored in browser, or from credentials passed to the function
+
+    Args:
+        request: The request given by the app routing function, contains cookies set in it
+        username (str, optional): Username for if the cookies are not yet set in the browser. Defaults to None.
+        private_key (str, optional): Private key for if the cookies are not yet set in the browser. Defaults to None.
+
+    Returns:
+        dict: A dict containing the decrypted user config
+    """
     if request != None:
         with open(f'users/{request.cookies.get("username")}/config.json', 'r') as user_config_file:
             user = json.load(user_config_file)
@@ -139,6 +186,18 @@ def load_user_config(request, username=None, private_key=None):
     return user
 
 def load_user_data(user: dict, private_key: str, secret_key: str):
+    """
+    A function that loads the user data using the data in the user dict, and the private key, and secret key
+
+    Args:
+        user (dict): The user dict decrypted and returned in the load_user_config function
+        private_key (str): The private_key in the browser cookies, but passed directly to this function
+        secret_key (str): The secret key for symmetrical encryption in the user data
+
+    Returns:
+        dict: The user data, eg the timetable, notices, calendar etc.
+    """
+    
     try:
         open(f'users/{user["username"]}/data.json', 'rb').close()
     except FileNotFoundError:
@@ -174,10 +233,20 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
         return data
 
 def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800, request=None):
+    """
+    A function that sets a timer to get new data from Sentral
+
+    Args:
+        username (str): The user's username
+        private_key (str): The usrer's private key
+        secret_key (_type_): The user's secret key
+        refresh_time (int, optional): The amount of time beween refreshes, in seconds. Defaults to 1800.
+        request (_type_, optional): The request from the browser can be used if desired, to grab the private key and secret key. Defaults to None.
+    """
+    
     global timers
     global add_cookie
     
-    print('TIMER WENT OFF!')
     user = load_user_config(None, username=username, private_key=private_key)
     
     user['headless'] = headless
@@ -220,29 +289,43 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
         data_json.write(padded_data)
         #json.dump(data, data_json)
     
-    print('The timer stopped going off.')
-    
     try:
         timers[username].cancel()
-        print('Cancelled the previous timer!')
     except KeyError:
         pass
     
     #1800.0 for 30 minutes, 600 for 10 minutes
-    timers[username] = Timer(float(refresh_time), lambda username=username, private_key=private_key, secret_key=secret_key: repeat_reload(username, private_key, secret_key))
+    timers[username] = threading.Timer(refresh_time, lambda username=username, private_key=private_key, secret_key=secret_key: repeat_reload(username, private_key, secret_key))
+    timers[username].daemon = True # Seting it to daemon kills the thread if the main thread exits
     timers[username].start()
 
 def format_event(event, event_date):
+    """
+    Converts the full timestring given by Sentralify on events to a human readable format
+
+    Args:
+        event dict: The event dict to change
+        event_date datetime.datetime: The date of the event
+    """
     if event['start'] is not None:
         event['start'] = event['start'].strftime('%H:%M')
     if event['end'] is not None:
         event['end'] = event['end'].strftime('%H:%M')
     event['date'] = event_date.strftime('%d/%m/%Y')
-    # Assuming title cleaning is not needed for now, comment it out
+    # If I ever want to add title cleaning then I can test the below comment it out
     # event['title'] = event['title'].replace('Events: ', '')
     
 def render_markdown_page(markdown_name: str):
+    """
+    Takes the name of a markdown file, and returns a template to render on the page
+
+    Args:
+        markdown_name str: The name of the markdown file, without .md suffix
+    """
+    
     mrkdown = markdown.markdown(open(f'./static/markdown/{markdown_name}.md', 'r').read())
+    # The below is a bit of a weird mess, but I'll try to explain it
+    # The 4 opening braces and 4 closing braces, even though Jinja2 reuires only two, is because python evaluates {} to be a place to be .format-ted but double braces, negates that behaviour
     return render_template_string("""
            <!DOCTYPE html>
             <html lang="en">
@@ -266,8 +349,6 @@ def render_markdown_page(markdown_name: str):
             {{% include 'partials/footer.jinja' with context %}}
             </body>
             </html>
-           
-           
            """.format(markdown_name, markdown_name.title().replace('-', ' ').replace('_', ' '), mrkdown), user=fake_user)
 
 #################################################################################################
@@ -433,6 +514,8 @@ def timetable():
     
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
     
+    print(data['timetable'])
+    
     return render_template('timetable.jinja', user=user, data=data, request=request)
 
 @app.route('/calendar')
@@ -510,11 +593,13 @@ def details():
     
     if not user:
         return redirect('/login')
+
+    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
     
     if in_docker:
         return redirect('/dashboard')
     else:
-        return render_template('details.jinja', user=user, request=request)
+        return render_template('details.jinja', user=user, request=request, data=data)
 
 @app.route('/reload')
 def reload():

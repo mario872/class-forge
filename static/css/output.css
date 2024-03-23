@@ -1825,6 +1825,50 @@ input[type="range"]::-ms-fill-lower {
   height: fit-content;
 }
 
+.h-auto {
+  height: auto;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.h-64 {
+  height: 16rem;
+}
+
+.h-96 {
+  height: 24rem;
+}
+
+.h-screen {
+  height: 100vh;
+}
+
+.h-5 {
+  height: 1.25rem;
+}
+
+.h-\[80vh\] {
+  height: 80vh;
+}
+
+.h-\[50vh\] {
+  height: 50vh;
+}
+
+.h-\[60vh\] {
+  height: 60vh;
+}
+
+.h-\[70vh\] {
+  height: 70vh;
+}
+
+.h-\[75vh\] {
+  height: 75vh;
+}
+
 .min-h-full {
   min-height: 100%;
 }
@@ -1865,6 +1909,10 @@ input[type="range"]::-ms-fill-lower {
   width: 100%;
 }
 
+.w-48 {
+  width: 12rem;
+}
+
 .max-w-7xl {
   max-width: 80rem;
 }
@@ -1897,6 +1945,10 @@ input[type="range"]::-ms-fill-lower {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .grid-cols-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
@@ -1927,6 +1979,10 @@ input[type="range"]::-ms-fill-lower {
 
 .justify-between {
   justify-content: space-between;
+}
+
+.gap-4 {
+  gap: 1rem;
 }
 
 .gap-8 {
@@ -2012,6 +2068,15 @@ input[type="range"]::-ms-fill-lower {
   border-width: 2px;
 }
 
+.border {
+  border-width: 1px;
+}
+
+.border-x-2 {
+  border-left-width: 2px;
+  border-right-width: 2px;
+}
+
 .border-t {
   border-top-width: 1px;
 }
@@ -2048,6 +2113,11 @@ input[type="range"]::-ms-fill-lower {
 .border-yellow-400 {
   --tw-border-opacity: 1;
   border-color: rgb(227 160 8 / var(--tw-border-opacity));
+}
+
+.border-blue-800 {
+  --tw-border-opacity: 1;
+  border-color: rgb(30 66 159 / var(--tw-border-opacity));
 }
 
 .bg-blue-100 {
@@ -2121,6 +2191,16 @@ input[type="range"]::-ms-fill-lower {
 
 .to-blue-700 {
   --tw-gradient-to: #1A56DB var(--tw-gradient-to-position);
+}
+
+.object-contain {
+  -o-object-fit: contain;
+     object-fit: contain;
+}
+
+.object-cover {
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
 .p-2 {
@@ -2244,6 +2324,11 @@ input[type="range"]::-ms-fill-lower {
 .text-sm {
   font-size: 0.875rem;
   line-height: 1.25rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
 }
 
 .font-bold {
@@ -2610,6 +2695,10 @@ input[type="range"]::-ms-fill-lower {
 
   .md\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .md\:grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 
   .md\:justify-between {
