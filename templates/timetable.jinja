@@ -29,7 +29,13 @@
     {% set day_num = namespace(value=0) %}
     {% set period_num = namespace(value=1) %}
     {% for x in range(data['timetable'][0]['periods']|length) %}
-      {% if data['timetable'][:5][day_num.value]['periods'][x]['full_name'] != None %}
+      {% set found_valid_period = namespace(value=false) %}
+      {% for y in range(5) %}
+        {% if data['timetable'][:5][y]['periods'][x]['full_name'] != None %}
+          {% set found_valid_period.value = true %}
+        {% endif %}        
+      {% endfor %}
+      {% if found_valid_period.value %}
         <tr>
           <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ period_num.value }}</th>
           {% for y in range(5) %}
@@ -74,7 +80,7 @@
     <tr>
       <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">Week B</th>
       {% for day in range(5) %}
-        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][5+day]['date'].split(' ')[:3]|join(' ') }}</th>
+        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][5+day]['date'].split(' ')[:4]|join(' ') }}</th>
       {% endfor%}
     </tr>
     <!-- Week B Header End -->
@@ -83,7 +89,13 @@
     {% set day_num = namespace(value=0) %}
     {% set period_num = namespace(value=1) %}
     {% for x in range(data['timetable'][6]['periods']|length) %}
-      {% if data['timetable'][:5][day_num.value]['periods'][x]['full_name'] != None %}
+      {% set found_valid_period = namespace(value=false) %}
+      {% for y in range(5) %}
+        {% if data['timetable'][5:10][y]['periods'][x]['full_name'] != None %}
+          {% set found_valid_period.value = true %}
+        {% endif %}        
+      {% endfor %}
+      {% if found_valid_period.value %}
         <tr>
           <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ period_num.value }}</th>
           {% for y in range(5) %}
