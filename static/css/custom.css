@@ -1,0 +1,47 @@
+.future-day {
+    border: solid 1px #ccc
+}
+
+.present {
+    background-color: #71b771
+}
+
+.partial-non-legal {
+    background-color: #a9dfa9;
+    background-image: repeating-linear-gradient(-45deg,transparent,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 4px)
+}
+
+.absent-non-legal {
+    background-color: #6edf6e;
+    background-image: repeating-linear-gradient(-45deg,transparent,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 4px)
+}
+
+.absent-explained-legal {
+    background-color: orange;
+    background-image: repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 4px)
+}
+
+.partial-legal {
+    background-color: #ffd57b;
+    background-image: repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 4px)
+}
+
+.partial-unexplained {
+    background-color: #ecafaf;
+    background-image: repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 4px)
+}
+
+.holiday {
+    background-color: silver;
+    background-image: repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 4px)
+}
+
+.absent {
+    background-color: #fc7b7b;
+    background-image: repeating-linear-gradient(45deg,transparent,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 4px)
+}
+
+.not-yet-enrolled {
+    background: #f0f0f0 center repeat-x;
+    color: #e0e0e0
+}

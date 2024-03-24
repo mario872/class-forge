@@ -596,10 +596,7 @@ def details():
 
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
     
-    if in_docker:
-        return redirect('/dashboard')
-    else:
-        return render_template('details.jinja', user=user, request=request, data=data)
+    return render_template('details.jinja', user=user, request=request, data=data)
 
 @app.route('/reload')
 def reload():
