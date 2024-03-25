@@ -21,18 +21,15 @@ import json
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
-from binascii import hexlify
 import os
 import random
 import markdown
 from base64 import b64decode, b64encode
-from bs4 import BeautifulSoup
 import threading
 from dateutil.parser import parse
 from datetime import datetime, timedelta
 import ast
 from werkzeug.routing import BaseConverter
-import sys
 
 #################################################################################################
 # Variables Setup
