@@ -369,64 +369,67 @@ def login():
 
 @app.route('/login/finish', methods=['POST'])
 def finish_login():
-    data = request.form
-    
-    if data.get('privacyPolicyCheckbox') and data.get('tosCheckbox'):
-        pass
-    else:
-        return redirect('/login?message=Please+accept+the+privacy+policy+and+the+terms+of+service.')
+    try:
+        data = request.form
         
-    
-    os.makedirs('users/' + data['username'], exist_ok=True)
-
-    private_key = RSA.generate(2048)
-    public_key = private_key.publickey()
-    encrypter = PKCS1_OAEP.new(key=public_key)
-    
-    username = data['username'].lower().encode(encoding='latin')
-    username = encrypter.encrypt(username).decode(encoding='latin')
-    password = data['password'].encode(encoding='latin')
-    password = encrypter.encrypt(password).decode(encoding='latin')
-    base_url = data['base_url'].lower().encode(encoding='latin')
-    base_url = encrypter.encrypt(base_url).decode(encoding='latin')
-    state = data['state'].encode(encoding='latin')
-    state = encrypter.encrypt(state).decode(encoding='latin')
-    
-    user = {'username': data['username'],
-            'password': data['password'],
-            'base_url': data['base_url'],
-            'state': data['state'],
-            'headless': headless
-            }
-       
-    encrypted_user = {'username': username,
-                      'password': password,
-                      'base_url': base_url,
-                      'state': state,
-                      'photo_path': f'user/{data["username"]}"/photo.png'
-                      }
-    
-    if sentralify(user, check_login=True) == True:
-        with open(f'users/{user["username"]}/config.json', 'w') as user_config:
-            json.dump(encrypted_user, user_config)
-            
-        secret_key = os.urandom(24)
-        
-        with open('./users/' + data['username'] + '/secret_key', 'wb') as secret_key_file:
-            secret_key_file.write(secret_key) 
-        
-        response = make_response(render_template('login_complete.jinja', user=fake_user, request=request))
-        response.set_cookie('secret_key', secret_key.decode('latin1'), secure=True)
-        response.set_cookie('username', data['username'], secure=True)
-        response.set_cookie('private_key', private_key.export_key().decode(), secure=True)
-        
-        return response
-    
-    else:
         if data.get('privacyPolicyCheckbox') and data.get('tosCheckbox'):
-            return redirect('/login?message=Sorry,+those+login+details+are+incorrect')
+            pass
         else:
-            return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy+policy+and+the+terms+of+service.')
+            return redirect('/login?message=Please+accept+the+privacy+policy+and+the+terms+of+service.')
+            
+        
+        os.makedirs('users/' + data['username'], exist_ok=True)
+
+        private_key = RSA.generate(2048)
+        public_key = private_key.publickey()
+        encrypter = PKCS1_OAEP.new(key=public_key)
+        
+        username = data['username'].lower().encode(encoding='latin')
+        username = encrypter.encrypt(username).decode(encoding='latin')
+        password = data['password'].encode(encoding='latin')
+        password = encrypter.encrypt(password).decode(encoding='latin')
+        base_url = data['base_url'].lower().encode(encoding='latin')
+        base_url = encrypter.encrypt(base_url).decode(encoding='latin')
+        state = data['state'].encode(encoding='latin')
+        state = encrypter.encrypt(state).decode(encoding='latin')
+        
+        user = {'username': data['username'],
+                'password': data['password'],
+                'base_url': data['base_url'],
+                'state': data['state'],
+                'headless': headless
+                }
+        
+        encrypted_user = {'username': username,
+                        'password': password,
+                        'base_url': base_url,
+                        'state': state,
+                        'photo_path': f'user/{data["username"]}"/photo.png'
+                        }
+        
+        if sentralify(user, check_login=True) == True:
+            with open(f'users/{user["username"]}/config.json', 'w') as user_config:
+                json.dump(encrypted_user, user_config)
+                
+            secret_key = os.urandom(24)
+            
+            with open('./users/' + data['username'] + '/secret_key', 'wb') as secret_key_file:
+                secret_key_file.write(secret_key) 
+            
+            response = make_response(render_template('login_complete.jinja', user=fake_user, request=request))
+            response.set_cookie('secret_key', secret_key.decode('latin1'), secure=True)
+            response.set_cookie('username', data['username'], secure=True)
+            response.set_cookie('private_key', private_key.export_key().decode(), secure=True)
+            
+            return response
+        
+        else:
+            if data.get('privacyPolicyCheckbox') and data.get('tosCheckbox'):
+                return redirect('/login?message=Sorry,+those+login+details+are+incorrect')
+            else:
+                return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy+policy+and+the+terms+of+service.')
+    except:
+        return redirect('/login?message=Sorry,+we+had+an+error+on+our+end,+please+try+signing+in+again.')
 
 @app.route('/dashboard')
 def home():    

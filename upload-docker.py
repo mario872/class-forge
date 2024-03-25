@@ -16,7 +16,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
 """
 
 import subprocess
-docker_v = 0.21
+docker_v = 0.22
 
 commands = [f'sudo docker build . -t solderingiron86/better-sentral:{docker_v}',
             f'sudo docker run --name better-sentral-{docker_v} -p 5000:5000 solderingiron86/better-sentral:{docker_v}',
