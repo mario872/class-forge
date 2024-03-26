@@ -50,7 +50,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
     {% for notice in data['notices'] %}
     <tr class="border-x-2 border-t-2 border-blue-600">
       <td id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...')" onmouseover="elementAppend('notice-{{ count.value }}-title', '\nReveal content...', 'notice-{{ count.value }}-content')" {% endif %} {% if notice['content'] != '' %} class="m-4" {% else %} class="m-4" {% endif %} style="	height: fit-content;">
-        <p id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium text-wrap underline" {% else %} class="text-indigo-700 font-medium text-wrap" {% endif %}>{{ notice['title'] }}</p>
+        <p id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium text-wrap underline" {% else %} class="text-indigo-700 underline font-medium text-wrap" {% endif %}>{{ notice['title'] }}</p>
       </td>
     </tr>
     {% if notice['content'] != "" %}
