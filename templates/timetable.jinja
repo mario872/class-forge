@@ -59,32 +59,36 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
             {% set day_num.value = y %}
             {% set current_period = data['timetable'][:5][day_num.value]['periods'][x] %}
             <td class="m-6 border-2 border-blue-600" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
-              <table>
-                <tr>
-                  <td class="pl-1 font-semibold">
-                    {{ current_period.full_name }}
-                  </td>
-                  <td class="pr-1 font-semibold float-right">
-                    {% if current_period.room != None %}
-                      {{ current_period.room }}
+              {% if current_period.full_name == None and current_period.name == None %}
+                <p class="pl-1">Free Period!</p>
+              {% else %}
+                <table>
+                  <tr>
+                    <td class="pl-1 font-semibold">
+                      {{ current_period.full_name }}
+                    </td>
+                    <td class="pr-1 font-semibold float-right">
+                      {% if current_period.room != None %}
+                        {{ current_period.room }}
+                      {% else %}
+                        No room
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="pl-1">
+                      {{ current_period.name }}
+                    </td>
+                    <td class="pr-1 float-right">
+                    {% if current_period.teacher != None %}
+                      {{ current_period.teacher }}
                     {% else %}
-                      No room
+                      No teacher
                     {% endif %}
-                  </td>
-                </tr>
-                <tr>
-                  <td class="pl-1">
-                    {{ current_period.name }}
-                  </td>
-                  <td class="pr-1 float-right">
-                  {% if current_period.teacher != None %}
-                    {{ current_period.teacher }}
-                  {% else %}
-                    No teacher
-                  {% endif %}
-                  </td>
-                </tr>
-              </table>
+                    </td>
+                  </tr>
+                </table>
+              {% endif %}
             </td>
           {% endfor %}
         </tr>
@@ -119,32 +123,36 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
             {% set day_num.value = y %}
             {% set current_period = data['timetable'][5:10][day_num.value]['periods'][x] %}
             <td class="m-6 border-2 border-blue-600" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
-              <table class="h-fit">
-                <tr>
-                  <td class="pl-1 font-semibold">
-                    {{ current_period.full_name }}
-                  </td>
-                  <td class="pr-1 font-semibold float-right">
-                    {% if current_period.room != None %}
-                      {{ current_period.room }}
+              {% if current_period.full_name == None and current_period.name == None %}
+                <p class="pl-1">Free Period!</p>
+              {% else %}
+                <table>
+                  <tr>
+                    <td class="pl-1 font-semibold">
+                      {{ current_period.full_name }}
+                    </td>
+                    <td class="pr-1 font-semibold float-right">
+                      {% if current_period.room != None %}
+                        {{ current_period.room }}
+                      {% else %}
+                        No room
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="pl-1">
+                      {{ current_period.name }}
+                    </td>
+                    <td class="pr-1 float-right">
+                    {% if current_period.teacher != None %}
+                      {{ current_period.teacher }}
                     {% else %}
-                      No room
+                      No teacher
                     {% endif %}
-                  </td>
-                </tr>
-                <tr>
-                  <td class="pl-1">
-                    {{ current_period.name }}
-                  </td>
-                  <td class="pr-1 float-right">
-                  {% if current_period.teacher != None %}
-                    {{ current_period.teacher }}
-                  {% else %}
-                    No teacher
-                  {% endif %}
-                  </td>
-                </tr>
-              </table>
+                    </td>
+                  </tr>
+                </table>
+              {% endif %}
             </td>
           {% endfor %}
         </tr>
