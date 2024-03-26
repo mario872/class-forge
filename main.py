@@ -514,8 +514,6 @@ def timetable():
     
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
     
-    print(data['timetable'])
-    
     return render_template('timetable.jinja', user=user, data=data, request=request)
 
 @app.route('/calendar')
