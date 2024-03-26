@@ -17,11 +17,20 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
 
 <!-- Start of header.jinja -->
 <head>
+    {% set catchphrases = [
+      "No children allowed!",
+      "I do not have a dungeon!",
+      "Children are not for eating.",
+      "Minecraft is fun.",
+      "Motivational Quotes!"
+    ] %}
+    {% set random_catchphrase = catchphrases|random %}
+
     <link rel="icon" type="image/x-icon" href="/static/Class Forge Logo.png">
     <script src="https://kit.fontawesome.com/2339fc463d.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     <link href="{{url_for('static',filename='css/custom.css')}}" rel="stylesheet">
-    <title>Class Forge</title>
+    <title>Class Forge - {{ random_catchphrase }}</title>
 </head>
 
 <script src="/static/header.js"></script>
@@ -46,6 +55,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
               {% if not request.path in ['/login', '/login/finish']%}
                 <a href="/reload"><button id="fetch_button" onclick="fetch_timetable_css('fetch_button')" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-3 py-2 text-center me-2 mb-2">Fetch Timetable</button></a>
               {% endif %}
+              <p class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-base block font-medium">{{ random_catchphrase }}</p>
             </div>
           </div>
         </div>
@@ -96,6 +106,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
         {% if not request.path in ['/login', '/login/finish']%}
           <a href="/reload"><button id="fetch_button" onclick="fetch_timetable_css('fetch_button')" type="button" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-3 py-2 text-center me-2 mb-2">Fetch Timetable</button></a>
         {% endif %}
+        <p class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-base block font-medium">{{ random_catchphrase }}</p>
       </div>
       <div class="border-t border-gray-700 pb-3 pt-4">
         <div class="flex items-center px-5">
