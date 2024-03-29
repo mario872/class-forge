@@ -35,16 +35,16 @@ from werkzeug.routing import BaseConverter
 # Variables Setup
 
 headless = True
-in_docker = os.environ.get('IN_DOCKER', False) # Detects if we are testing, or in a production docker container
-override = False # Whether to override to test production version
+in_docker = os.environ.get('IN_DOCKER', False)  # Detects if we are testing, or in a production docker container
+override = False  # Whether to override to test production version
 
-auto_off = 600.0 # Whether to automatically turn off the server after a certain period of time, currently 10 minutes
+auto_off = 600.0  # Whether to automatically turn off the server after a certain period of time, currently 10 minutes
 
 if in_docker or override:
     auto_off = None
     headless = True
 
-if auto_off != None:
+if auto_off is not None:
     auto_off_timer = threading.Timer(auto_off, lambda: os._exit(1))
     auto_off_timer.daemon = True
     auto_off_timer.start()
@@ -59,7 +59,7 @@ fake_user = {'username': 'your.name',
              'base_ur': 'caringbahhs',
              'photo_path': 'static/Rick Astley.jpg'}
 
-timers = {} # Used to store all of the timers used to automatically scrape Sentral
+timers = {}  # Used to store all the timers used to automatically scrape Sentral
 
 app = Flask(__name__)
 
@@ -67,7 +67,7 @@ app = Flask(__name__)
 # Functions
 
 
-class RegexConverter(BaseConverter): # Unused regex converter for url routing
+class RegexConverter(BaseConverter):  # Unused regex converter for url routing
     def __init__(self, url_map, *items):
         super(RegexConverter, self).__init__(url_map)
         self.regex = items[0]
@@ -89,7 +89,7 @@ def invert(rgb: tuple):
     return (255 - rgb[0], 255 - rgb[1], 255 - rgb[2])
 
 
-def decrypt(in_, private_key, test=None):
+def decrypt(in_, private_key: str, test=None):
     """
     Used to decrypt every item in a dict, or a str
 
@@ -211,7 +211,7 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
         secret_key (str): The secret key for symmetrical encryption in the user data
 
     Returns:
-        dict: The user data, eg the timetable, notices, calendar etc.
+        dict: The user data, e.g. the timetable, notices, calendar etc.
     """
 
     try:
@@ -256,10 +256,14 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
     """
     A function that sets a timer to get new data from Sentral
 
-    Args: username (str): The user's username private_key (str): The user's private key secret_key (_type_): The
-    user's secret key refresh_time (int, optional): The amount of time between refreshes, in seconds. Defaults to
-    1800. request (_type_, optional): The request from the browser can be used if desired, to grab the private key
-    and secret key. Defaults to None.
+    Args:
+        username (str): The user's username
+        private_key (str): The user's private key
+        secret_key: The user's secret key
+        refresh_time (int, optional): The amount of time between refreshes, in seconds, defaults to 1800
+        http_request (_type_, optional): The request from the browser can be used if desired, to grab the private key
+        and secret key. Defaults to None.
+
     """
 
     global timers
@@ -321,7 +325,7 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
 
 def format_event(event, event_date):
     """
-    Converts the full timestring given by Sentralify on events to a human readable format
+    Converts the full timestring given by Sentralify on events to a human-readable format
 
     Args:
         event dict: The event dict to change
@@ -345,9 +349,10 @@ def render_markdown_page(markdown_name: str):
     """
 
     mrkdown = markdown.markdown(open(f'./static/markdown/{markdown_name}.md', 'r').read())
-    # The below is a bit of a weird mess, but I'll try to explain it The 4 opening braces and 4 closing braces,
-    # even though Jinja2 requires only two, is because python evaluates {} to be a place to be .format-ted but double
-    # braces, negates that behaviour
+    # The below is a bit of an eccentric mess.
+    # However, I'll try to explain it The 4 opening braces and 4 closing
+    # braces, even though Jinja2 requires only two, is because python evaluates {} to be a place to be .format-ted
+    # but double braces, negates that behaviour
     return render_template_string("""
            <!DOCTYPE html>
             <html lang="en">
