@@ -21,6 +21,22 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{{url_for('static',filename='css/output.css')}}" rel="stylesheet">
+    <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+      
+      // Whenever the user explicitly chooses light mode
+      localStorage.theme = 'light'
+      
+      // Whenever the user explicitly chooses dark mode
+      localStorage.theme = 'dark'
+      
+      // Whenever the user explicitly chooses to respect the OS preference
+      localStorage.removeItem('theme')
+    </script>
     {% include 'partials/header.jinja' with context %}
 </head>
 <body>
@@ -37,7 +53,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
     <tr>
       <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">Week A</th>
       {% for day in range(5) %}
-        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][day]['date'].split(' ')[:3]|join(' ') }}</th>
+        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][day]['date'] }}</th>
       {% endfor%}
     </tr>
     <!-- Week A Header End -->
@@ -58,11 +74,11 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
           {% for y in range(5) %}
             {% set day_num.value = y %}
             {% set current_period = data['timetable'][:5][day_num.value]['periods'][x] %}
-            <td class="m-6 border-2 border-blue-600" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
+            <td class="m-6 border-2 border-blue-600 bg-inherit" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
               {% if current_period.full_name == None and current_period.name == None %}
-                <p class="pl-1">Free Period!</p>
+                <p class="pl-1 dark:text-white">Free Period!</p>
               {% else %}
-                <table>
+                <table class="" style="background-color: transparent">
                   <tr>
                     <td class="pl-1 font-semibold">
                       {{ current_period.full_name }}
@@ -101,7 +117,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
     <tr>
       <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">Week B</th>
       {% for day in range(5) %}
-        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][5+day]['date'].split(' ')[:4]|join(' ') }}</th>
+        <th class="m-6 p-2 border-2 border-blue-600 text-center border-collapse">{{ data['timetable'][5+day]['date'] }}</th>
       {% endfor%}
     </tr>
     <!-- Week B Header End -->
@@ -122,11 +138,11 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
           {% for y in range(5) %}
             {% set day_num.value = y %}
             {% set current_period = data['timetable'][5:10][day_num.value]['periods'][x] %}
-            <td class="m-6 border-2 border-blue-600" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
+            <td class="m-6 border-2 border-blue-600 bg-inherit" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
               {% if current_period.full_name == None and current_period.name == None %}
-                <p class="pl-1">Free Period!</p>
+                <p class="pl-1 dark:text-white">Free Period!</p>
               {% else %}
-                <table>
+                <table class="" style="background-color: transparent">
                   <tr>
                     <td class="pl-1 font-semibold">
                       {{ current_period.full_name }}

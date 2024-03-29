@@ -2,3 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 @tailwind forms;
+
+@layer base {
+    header {
+        @apply bg-white dark:bg-slate-800;
+    }
+    body {
+        @apply bg-white dark:bg-slate-800;
+    }
+    a {
+      @apply text-blue-400 dark:text-blue-300;
+    }
+    a:hover {
+      @apply text-blue-300 dark:text-blue-400;
+    }
+    p {
+        @apply text-black dark:text-zinc-300;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        @apply text-black dark:text-zinc-300;
+    }
+    table {
+        @apply bg-white dark:bg-slate-800;
+    }
+
+    th {
+        @apply text-black dark:text-zinc-300;
+    }
+    
+    label {
+        @apply text-black dark:text-zinc-300;
+    }
+  }

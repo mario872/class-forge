@@ -74,6 +74,18 @@ class RegexConverter(BaseConverter):
 
 app.url_map.converters['regex'] = RegexConverter
 
+def invert(rgb: tuple):
+    """
+    Used to invert a tuple of RGB values
+
+    Args:
+        rgb (tuple): The tuple of RGB values to be inverted
+
+    Returns:
+        tuple: The inverted tuple of RGB values
+    """
+    return (255 - rgb[0], 255 - rgb[1], 255 - rgb[2])
+
 def decrypt(in_, private_key, test=None):
     """
     Used to decrypt every item in a dict, or a str
@@ -227,7 +239,10 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
         padded_data = padded_data.decode('ascii')
         data = padded_data.rstrip('~')
         data = ast.literal_eval(data)
-        return data
+        
+    for day in data['timetable']:
+        day['date'] = parse(day['date']).strftime('%a %b %-d')
+    return data
 
 def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800, request=None):
     """
@@ -248,7 +263,10 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
     
     user['headless'] = headless
     
-    data = sentralify(user)
+    try:
+        data = sentralify(user)
+    except:
+        data = load_user_data(username, private_key, secret_key)
     
     for notice in data['notices']:
         try:
@@ -392,6 +410,7 @@ def finish_login():
         base_url = encrypter.encrypt(base_url).decode(encoding='latin')
         state = data['state'].encode(encoding='latin')
         state = encrypter.encrypt(state).decode(encoding='latin')
+        theme = encrypter.encrypt('dark'.encode(encoding='latin')).decode(encoding='latin')
         
         user = {'username': data['username'],
                 'password': data['password'],
@@ -404,6 +423,7 @@ def finish_login():
                         'password': password,
                         'base_url': base_url,
                         'state': state,
+                        'theme': theme,
                         'photo_path': f'user/{data["username"]}"/photo.png'
                         }
         
@@ -444,7 +464,10 @@ def home():
     if not user:
         return redirect('/login')
     
-    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
+    try:
+        data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
+    except AttributeError:
+        return redirect('/login')
     
     three_day_timetable = []
     if not datetime.now().weekday() in [0, 4, 5, 6]:

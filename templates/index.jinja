@@ -23,20 +23,36 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
     <link href="{{url_for('static',filename='css/output.css')}}" rel="stylesheet">
     <script src="/static/index.js"></script>
     <script src="https://kit.fontawesome.com/2339fc463d.js" crossorigin="anonymous"></script>
+    <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+      
+      // Whenever the user explicitly chooses light mode
+      localStorage.theme = 'light'
+      
+      // Whenever the user explicitly chooses dark mode
+      localStorage.theme = 'dark'
+      
+      // Whenever the user explicitly chooses to respect the OS preference
+      localStorage.removeItem('theme')
+    </script>
     {% include 'partials/header.jinja' with context %}
 </head>
 
 <body>
 <!-- Start of index.jinja -->
-  <header class="bg-white shadow">
+  <header class="bg-white dark:bg-slate-800 shadow">
     <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <h1 class="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+      <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-zinc-300">Dashboard</h1>
     </div>
   </header>
 
   {% if message != None %}
     <div class="m-4 mx-12 p-3 w-fill py-1.5 outline outline-red-500 bg-red-300/25 text-gray-900 shadow-sm">
-      <p class="text-center"> <i class="fa-solid fa-circle-exclamation"></i> Error: {{ message }}</p>
+      <p class="text-center text-black dark:text-zinc-300"> <i class="fa-solid fa-circle-exclamation"></i> Error: {{ message }}</p>
     </div>
   {% endif %}
   
@@ -45,12 +61,12 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
 
     <!-- Notices  -->
     <table id="notices-table" class="h-[75vh] table-auto m-6 border-2 border-blue-600">
-    <th class="pl-6 font-bold border-2 border-blue-600 h-5">Notices</th>
+    <th class="pl-6 font-bold border-2 border-blue-600 h-5 text-black dark:text-zinc-300">Notices</th>
     {% set count = namespace(value=0) %}
     {% for notice in data['notices'] %}
     <tr class="border-x-2 border-t-2 border-blue-600">
       <td id="notice-{{ count.value }}" {% if notice['content'] != "" %} onclick="showHide('notice-{{ count.value }}-content')" onmouseleave="elementRemove('notice-{{ count.value }}-title', '\nReveal content...')" onmouseover="elementAppend('notice-{{ count.value }}-title', '\nReveal content...', 'notice-{{ count.value }}-content')" {% endif %} {% if notice['content'] != '' %} class="m-4" {% else %} class="m-4" {% endif %} style="	height: fit-content;">
-        <p id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="font-medium text-wrap underline" {% else %} class="text-indigo-700 underline font-medium text-wrap" {% endif %}>{{ notice['title'] }}</p>
+        <p id="notice-{{ count.value }}-title" {% if notice['content'] != "" %} class="px-2 font-medium text-wrap underline" {% else %} class="px-2 text-indigo-700 underline font-medium text-wrap" {% endif %}>{{ notice['title'] }}</p>
       </td>
     </tr>
     {% if notice['content'] != "" %}
@@ -61,20 +77,22 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
       {% set count.value = count.value + 1 %}
     {% endfor %}
     </table>
+
     <!-- Timetable -->
     <div id="timetable-grid" class="h-[75vh] flex top-0 m-6 grid grid-cols-1">
     {% set count = namespace(value=1) %}
     <table class="table-auto border-2 border-blue-600">
     {% for day in tdt %}
+      <tr>
       <th class="m-6 border-2 border-blue-600 text-center border-collapse">ㅤ</th>
-      <th class="m-6 w-full border-2 border-blue-600 text-center border-collapse">Timetable for {{ day['date'].split(' ')[:3]|join(' ') }}</th>
+      <th class="m-6 w-full border-2 border-blue-600 text-center h-5 border-collapse text-black dark:text-zinc-300">Timetable for {{ day['date'] }}</th>
         {% set period_num = namespace(value=1) %}
         {% for period in day['periods'] %}
           {% if period.full_name != None %}
             <tr class="m-6">
               <td class="m-6 w-0.5 px-2 border-2 border-blue-600" style="background-color: #{{ period.border_colour }}">{{ period_num.value }}</td>
-              <td class="m-6 px-2 border-2 border-blue-600" style="background-color: #{{ period.background_colour }};">
-                <table>
+              <td class="m-6 px-2 border-2 border-blue-600" style="background-color: #{{ period.background_colour }}">
+                <table style="background-color: transparent">
                   <tr>
                     <td class="pl-1 font-semibold">
                       {{ period.full_name }}
@@ -105,7 +123,8 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
             {% set period_num.value = period_num.value + 1 %}
           {% endif %}
         {% endfor %}
-    {% set count.value = count.value + 1 %}
+      {% set count.value = count.value + 1 %}
+      </tr>
     {% endfor %}
     </table>
     </div>
@@ -115,12 +134,12 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
       {% set count = namespace(value=1) %}
 
       <table class="table-auto border-2 border-blue-600 sm:w-full">
-      <th class="m-6 outline-blue-600 text-center border-collapse">Calendar</th>
+      <th class="m-6 outline-blue-600 text-center border-collapse h-5 text-black dark:text-zinc-300">Calendar</th>
       {% for event in today_calendar %}
 
         <tr id="event-{{ count.value }}">
           <td class="m-6 w-0.5 px-2 border-t-2 border-blue-600">
-            <h3>{{ event.title }}</h3>
+            <h3 class="text-black dark:text-zinc-300">{{ event.title }}</h3>
             <p>On {{ event.date }}</p>
           </td>
         </tr>
