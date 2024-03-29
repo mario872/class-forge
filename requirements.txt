@@ -1,6 +1,7 @@
-flask
+flask~=3.0.2
 pycryptodome
-sentralify
-markdown
+sentralify~=1.2.1
+markdown~=3.6
 beautifulsoup4
-python-dateutil
+python-dateutil~=2.9.0.post0
+Werkzeug~=3.0.1
