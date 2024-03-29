@@ -48,7 +48,7 @@ if auto_off != None:
     auto_off_timer = threading.Timer(auto_off, lambda: os._exit(1))
     auto_off_timer.daemon = True
     auto_off_timer.start()
-    
+
 if override:
     in_docker = True
 
@@ -66,13 +66,15 @@ app = Flask(__name__)
 ################################################################################################
 # Functions
 
-# Unused regex converter for url routing
-class RegexConverter(BaseConverter):
+
+class RegexConverter(BaseConverter): # Unused regex converter for url routing
     def __init__(self, url_map, *items):
         super(RegexConverter, self).__init__(url_map)
         self.regex = items[0]
 
+
 app.url_map.converters['regex'] = RegexConverter
+
 
 def invert(rgb: tuple):
     """
@@ -86,6 +88,7 @@ def invert(rgb: tuple):
     """
     return (255 - rgb[0], 255 - rgb[1], 255 - rgb[2])
 
+
 def decrypt(in_, private_key, test=None):
     """
     Used to decrypt every item in a dict, or a str
@@ -98,21 +101,23 @@ def decrypt(in_, private_key, test=None):
     Returns:
         dict or str: A dict or str, with the decrypted values in it
     """
-    
+
     try:
         private_key = RSA.import_key(private_key.encode())
     except AttributeError:
         private_key = RSA.import_key(private_key)
-    
+
     decrypter = PKCS1_OAEP.new(key=private_key)
-    
-    if test != None:
+
+    if test is not None:
         try:
             print(decrypter.decrypt(test.encode(encoding='latin')))
         except ValueError:
             return False
-    
-    if type(in_) == dict:
+
+    out = None
+
+    if in_ is dict:
         out = {}
         keys = list(in_.keys())
         for key in keys:
@@ -123,76 +128,78 @@ def decrypt(in_, private_key, test=None):
                     out[key] = decrypter.decrypt(in_[key].encode(encoding='latin'))
             else:
                 out[key] = in_[key]
-                
-    elif type(in_) == str:
-        out = decrypter.decrypt(in_.encode(encoding='latin')).decode(encoding='latin')
-        
-    #elif type(in_) == bytes:
-    #    print(in_)
-    #    out = decrypter.decrypt(in_)
-    #    out = base64.b64decode(out)
-    
-    return out
 
-def cookies_present(request):
+    elif in_ is str:
+        out = decrypter.decrypt(in_.encode(encoding='latin')).decode(encoding='latin')
+
+    if out is not None:
+        return out
+    else:
+        print('Error: in_ must be a dict or str.')
+        exit()
+
+
+def cookies_present(http_request):
     """
     A function to check if cookies are present in the user's browser session.
 
     Args:
-        request: The request given by the app routing function, contains cookies set in it
+        http_request: The request given by the app routing function, contains cookies set in it
 
     Returns:
         bool: Whether cookies are set or not.
     """
-    
-    username = request.cookies.get('username')
-    password = request.cookies.get('private_key')
-    secret_key = request.cookies.get('secret_key')
-    
-    if username != None or password != None or secret_key!= None:
+
+    username = http_request.cookies.get('username')
+    password = http_request.cookies.get('private_key')
+    secret_key = http_request.cookies.get('secret_key')
+
+    if username is not None or password is not None or secret_key is not None:
         try:
             open(f'users/{username}/config.json', 'r').close()
         except FileNotFoundError:
             print('Error: Cookies were present, but there was no user config found!')
             return False
-        
+
         return True
-    
+
     else:
         return False
-    
-def load_user_config(request, username=None, private_key=None):
+
+
+def load_user_config(http_request, username=None, private_key=None):
     """
     A function that loads the user config using cookies stored in browser, or from credentials passed to the function
 
     Args:
-        request: The request given by the app routing function, contains cookies set in it
+        http_request: The request given by the app routing function, contains cookies set in it
         username (str, optional): Username for if the cookies are not yet set in the browser. Defaults to None.
         private_key (str, optional): Private key for if the cookies are not yet set in the browser. Defaults to None.
 
     Returns:
         dict: A dict containing the decrypted user config
     """
-    if request != None:
-        with open(f'users/{request.cookies.get("username")}/config.json', 'r') as user_config_file:
+    if http_request is not None:
+        with open(f'users/{http_request.cookies.get("username")}/config.json', 'r') as user_config_file:
             user = json.load(user_config_file)
-            
-        user = decrypt(user, request.cookies.get('private_key'))
+
+        user = decrypt(user, http_request.cookies.get('private_key'))
     else:
         with open(f'users/{username}/config.json', 'r') as user_config_file:
             user = json.load(user_config_file)
-            
+
         user = decrypt(user, private_key, test=user['username'])
-        
-    if user == False:
-            return False
-    
+
+    if user is False:
+        return False
+
     try:
         open(user['photo_path'], 'r').close()
     except FileNotFoundError:
         user['photo_path'] = 'static/unsplash/' + random.choice(os.listdir('static/unsplash/'))
-    
+
     return user
+
 
 def load_user_data(user: dict, private_key: str, secret_key: str):
     """
@@ -206,16 +213,16 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
     Returns:
         dict: The user data, eg the timetable, notices, calendar etc.
     """
-    
+
     try:
         open(f'users/{user["username"]}/data.json', 'rb').close()
     except FileNotFoundError:
         repeat_reload(user['username'], private_key, secret_key)
-    
+
     do_not_encode = False
-    if secret_key == None:
+    if secret_key is None:
         secret_key = request.cookies.get('secret_key')
-        if secret_key == None:
+        if secret_key is None:
             try:
                 with open(f'users/{user["username"]}/secret_key', 'rb') as secret_key_file:
                     secret_key = secret_key_file.read()
@@ -228,7 +235,7 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
         os.remove(f'users/{user["username"]}/secret_key')
     except FileNotFoundError:
         pass
-    
+
     with open(f'users/{user["username"]}/data.json', 'r') as data_json:
         if do_not_encode:
             cipher = AES.new(secret_key, AES.MODE_ECB)
@@ -239,59 +246,57 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
         padded_data = padded_data.decode('ascii')
         data = padded_data.rstrip('~')
         data = ast.literal_eval(data)
-        
+
     for day in data['timetable']:
         day['date'] = parse(day['date']).strftime('%a %b %-d')
     return data
 
-def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800, request=None):
+
+def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800, http_request=None):
     """
     A function that sets a timer to get new data from Sentral
 
-    Args:
-        username (str): The user's username
-        private_key (str): The usrer's private key
-        secret_key (_type_): The user's secret key
-        refresh_time (int, optional): The amount of time beween refreshes, in seconds. Defaults to 1800.
-        request (_type_, optional): The request from the browser can be used if desired, to grab the private key and secret key. Defaults to None.
+    Args: username (str): The user's username private_key (str): The user's private key secret_key (_type_): The
+    user's secret key refresh_time (int, optional): The amount of time between refreshes, in seconds. Defaults to
+    1800. request (_type_, optional): The request from the browser can be used if desired, to grab the private key
+    and secret key. Defaults to None.
     """
-    
+
     global timers
-    global add_cookie
-    
+
     user = load_user_config(None, username=username, private_key=private_key)
-    
+
     user['headless'] = headless
-    
+
     try:
         data = sentralify(user)
     except:
         data = load_user_data(username, private_key, secret_key)
-    
+
     for notice in data['notices']:
         try:
             notice['content'] = markdown.markdown((notice['content']))
         except KeyError:
             pass
-    
+
     do_not_encode = False
-    if secret_key == None:
-        secret_key = request.cookies.get('secret_key')
-        if secret_key == None:
+    if secret_key is None:
+        secret_key = http_request.cookies.get('secret_key')
+        if secret_key is None:
             try:
                 with open(f'users/{user["username"]}/secret_key', 'rb') as secret_key_file:
                     secret_key = secret_key_file.read()
                     do_not_encode = True
                     if not in_docker:
-                        print('Secret Key is'+ str(secret_key) + 'In repeat_reload.')
+                        print('Secret Key is' + str(secret_key) + 'In repeat_reload.')
             except FileNotFoundError:
                 print('Error, I don\'t know what to do here!')
-    
+
     try:
         os.remove(f'users/{user["username"]}/secret_key')
     except FileNotFoundError:
         pass
-    
+
     with open(f'users/{user["username"]}/data.json', 'wb') as data_json:
         padded_data = f'{data}' + ('~' * ((16-len(f'{data}')) % 16))
         if do_not_encode:
@@ -302,17 +307,17 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
         padded_data = cipher.encrypt(padded_data)
         padded_data = b64encode(padded_data)
         data_json.write(padded_data)
-        #json.dump(data, data_json)
-    
+
     try:
         timers[username].cancel()
     except KeyError:
         pass
-    
-    #1800.0 for 30 minutes, 600 for 10 minutes
+
+    # 1800.0 for 30 minutes, 600 for 10 minutes
     timers[username] = threading.Timer(refresh_time, lambda username=username, private_key=private_key, secret_key=secret_key: repeat_reload(username, private_key, secret_key))
-    timers[username].daemon = True # Seting it to daemon kills the thread if the main thread exits
+    timers[username].daemon = True  # Setting it to daemon kills the thread if the main thread exits
     timers[username].start()
+
 
 def format_event(event, event_date):
     """
@@ -329,7 +334,8 @@ def format_event(event, event_date):
     event['date'] = event_date.strftime('%d/%m/%Y')
     # If I ever want to add title cleaning then I can test the below comment it out
     # event['title'] = event['title'].replace('Events: ', '')
-    
+
+
 def render_markdown_page(markdown_name: str):
     """
     Takes the name of a markdown file, and returns a template to render on the page
@@ -337,10 +343,11 @@ def render_markdown_page(markdown_name: str):
     Args:
         markdown_name str: The name of the markdown file, without .md suffix
     """
-    
+
     mrkdown = markdown.markdown(open(f'./static/markdown/{markdown_name}.md', 'r').read())
-    # The below is a bit of a weird mess, but I'll try to explain it
-    # The 4 opening braces and 4 closing braces, even though Jinja2 reuires only two, is because python evaluates {} to be a place to be .format-ted but double braces, negates that behaviour
+    # The below is a bit of a weird mess, but I'll try to explain it The 4 opening braces and 4 closing braces,
+    # even though Jinja2 requires only two, is because python evaluates {} to be a place to be .format-ted but double
+    # braces, negates that behaviour
     return render_template_string("""
            <!DOCTYPE html>
             <html lang="en">
@@ -369,13 +376,15 @@ def render_markdown_page(markdown_name: str):
 #################################################################################################
 # Routes for server
 
+
 @app.route('/')
 def one():
     if cookies_present(request):
         return redirect('/dashboard')
     else:
         return redirect('/login')
-    
+
+
 @app.route('/login')
 def login():
     try:
@@ -385,23 +394,23 @@ def login():
 
     return render_template('login.jinja', user=fake_user, message=message, request=request)
 
+
 @app.route('/login/finish', methods=['POST'])
 def finish_login():
     try:
         data = request.form
-        
+
         if data.get('privacyPolicyCheckbox') and data.get('tosCheckbox'):
             pass
         else:
             return redirect('/login?message=Please+accept+the+privacy+policy+and+the+terms+of+service.')
-            
-        
+
         os.makedirs('users/' + data['username'], exist_ok=True)
 
         private_key = RSA.generate(2048)
         public_key = private_key.publickey()
         encrypter = PKCS1_OAEP.new(key=public_key)
-        
+
         username = data['username'].lower().encode(encoding='latin')
         username = encrypter.encrypt(username).decode(encoding='latin')
         password = data['password'].encode(encoding='latin')
@@ -411,64 +420,66 @@ def finish_login():
         state = data['state'].encode(encoding='latin')
         state = encrypter.encrypt(state).decode(encoding='latin')
         theme = encrypter.encrypt('dark'.encode(encoding='latin')).decode(encoding='latin')
-        
+
         user = {'username': data['username'],
                 'password': data['password'],
                 'base_url': data['base_url'],
                 'state': data['state'],
                 'headless': headless
                 }
-        
+
         encrypted_user = {'username': username,
-                        'password': password,
-                        'base_url': base_url,
-                        'state': state,
-                        'theme': theme,
-                        'photo_path': f'user/{data["username"]}"/photo.png'
+                          'password': password,
+                          'base_url': base_url,
+                          'state': state,
+                          'theme': theme,
+                          'photo_path': f'user/{data["username"]}"/photo.png'
                         }
-        
-        if sentralify(user, check_login=True) == True:
+
+        if sentralify(user, check_login=True):
             with open(f'users/{user["username"]}/config.json', 'w') as user_config:
                 json.dump(encrypted_user, user_config)
-                
+
             secret_key = os.urandom(24)
-            
+
             with open('./users/' + data['username'] + '/secret_key', 'wb') as secret_key_file:
-                secret_key_file.write(secret_key) 
-            
+                secret_key_file.write(secret_key)
+
             response = make_response(render_template('login_complete.jinja', user=fake_user, request=request))
             response.set_cookie('secret_key', secret_key.decode('latin1'), secure=True)
             response.set_cookie('username', data['username'], secure=True)
             response.set_cookie('private_key', private_key.export_key().decode(), secure=True)
-            
+
             return response
-        
+
         else:
             if data.get('privacyPolicyCheckbox') and data.get('tosCheckbox'):
                 return redirect('/login?message=Sorry,+those+login+details+are+incorrect')
             else:
-                return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy+policy+and+the+terms+of+service.')
+                return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy'
+                                '+policy+and+the+terms+of+service.')
     except:
         return redirect('/login?message=Sorry,+we+had+an+error+on+our+end,+please+try+signing+in+again.')
 
+
 @app.route('/dashboard')
-def home():    
+def home():
     if not cookies_present(request):
         return redirect('/login')
-    
+
     try:
         user = load_user_config(request)
     except ValueError:
         return redirect('/login')
-    
+
     if not user:
         return redirect('/login')
-    
+
     try:
         data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
     except AttributeError:
         return redirect('/login')
-    
+
     three_day_timetable = []
     if not datetime.now().weekday() in [0, 4, 5, 6]:
         possible_days = [datetime.now() - timedelta(days=1), datetime.now(), datetime.now() + timedelta(days=1)]
@@ -481,26 +492,26 @@ def home():
             possible_days = [datetime.now() - timedelta(days=1), datetime.now() + timedelta(days=2), datetime.now() + timedelta(days=3)]
         elif datetime.now().weekday() == 6:
             possible_days = [datetime.now() - timedelta(days=2), datetime.now() + timedelta(days=1), datetime.now() + timedelta(days=2)]
-    
+
     for day in data['timetable']:
         for pday in possible_days:
             if parse(day['date']).day == pday.day:
                 three_day_timetable.append(day)
-    
+
     try:
         tmp = timers[user['username']]
         message = None
     except KeyError:
         message = 'Automatic reloading is not enabled, please press the fetch timetable button.'
-    
+
     events_today = []
-    
+
     today = datetime.now()
     weekend = today.weekday() in [5, 6]
 
     for event in data['calendar']:
         event_date = parse(event['date'])
-        
+
         if not weekend:
             if event_date.day == today.day and event_date.month == today.month:
                 # Today's events
@@ -517,57 +528,56 @@ def home():
                     # Weekend events
                     format_event(event, event_date)
                     events_today.append(event)
-                
-    
+
     return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today, request=request)
+
 
 @app.route('/timetable')
 def timetable():
     if not cookies_present(request):
         return redirect('/login')
-    
+
     try:
         user = load_user_config(request)
     except ValueError:
         return redirect('/login')
-        
-    
+
     if not user:
         return redirect('/login')
-    
+
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
-    
+
     return render_template('timetable.jinja', user=user, data=data, request=request)
+
 
 @app.route('/calendar')
 def calendar():
     if not cookies_present(request):
         return redirect('/login')
-    
+
     try:
         user = load_user_config(request)
     except ValueError:
         return redirect('/login')
-    
+
     if not user:
         return redirect('/login')
-    
-    #return redirect('/dashboard')
-    
+
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
-    
+
     # Organise calendar list by date
     data['calendar'] = sorted(data['calendar'], key=lambda x: parse(x['date']))
-    
+
     # Get number of weeks from calendar list
     total_days = parse(data['calendar'][-1]['date']) - parse(data['calendar'][0]['date'])
-    weeks = (total_days.days // 7) + 1 # Day one is a monday, last day is a friday, makes one week less than it should be
-    
-    # Put each day into it's own list
+    weeks = (total_days.days // 7) + 1  # Day one is a monday, last day is a friday, makes one week less than it
+                                        # should be
+
+    # Put each day into its own list
     per_day_calendar = []
     current_day_list = []
     current_day = parse(data['calendar'][0]['date'])
-    
+
     for x in range(len(data['calendar'])):
         if parse(data['calendar'][x]['date']).day == current_day.day and parse(data['calendar'][x]['date']).month == current_day.month:
             current_day_list.append(data['calendar'][x])
@@ -576,16 +586,17 @@ def calendar():
             per_day_calendar.append(current_day_list)
             current_day_list = [data['calendar'][x]]
             current_day = parse(data['calendar'][x]['date'])
-    
+
     per_day_calendar.append(current_day_list)
-    
-    # Put each week into it's own list in data['calendar']
+
+    # Put each week into its own list in data['calendar']
     per_week_calendar = []
-    current_week = [] # Current week calendar
-    days_in_week = [0, 1 , 2, 3, 4]
+    current_week = []  # Current week calendar
+    days_in_week = [0, 1, 2, 3, 4]
     last_day_in_week = -1
-    for y in range(len(per_day_calendar)): # Total number of days in per_day_calendar
-        # If it is a valid weekday of school, and it is greater than the last recorded day of the week, that means we're still in the same week as before
+    for y in range(len(per_day_calendar)):  # Total number of days in per_day_calendar
+        # If it is a valid weekday of school, and it is greater than the last recorded day of the week, that means
+        # we're still in the same week as before
         if parse(per_day_calendar[y][0]['date']).weekday() in days_in_week and parse(per_day_calendar[y][0]['date']).weekday() > last_day_in_week:
             current_week.append(per_day_calendar[y])
             last_day_in_week = parse(per_day_calendar[y][0]['date']).weekday()
@@ -593,53 +604,56 @@ def calendar():
             per_week_calendar.append(current_week)
             current_week = [per_day_calendar[y]]
             last_day_in_week = parse(per_day_calendar[y][0]['date']).weekday()
-            
+
     per_week_calendar.append(current_week)
-    current_week = [per_day_calendar[y]]
-    last_day_in_week = parse(per_day_calendar[y][0]['date']).weekday()
-    
+
     data['calendar'] = per_week_calendar
-      
+
     return render_template('calendar.jinja', user=user, data=data, weeks=weeks, request=request)
+
 
 @app.route('/details')
 def details():
     if not cookies_present(request):
         return redirect('/login')
-    
+
     try:
         user = load_user_config(request)
     except ValueError:
         return redirect('/login')
-    
+
     if not user:
         return redirect('/login')
 
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
-    
+
     return render_template('details.jinja', user=user, request=request, data=data)
+
 
 @app.route('/reload')
 def reload():
     if not cookies_present(request):
         return redirect('/login')
-    
+
     try:
         user = load_user_config(request)
     except ValueError:
         return redirect('/login')
-    
-    repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'), secret_key=request.cookies.get('secret_key'), request=request)
-    
+
+    repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'), secret_key=request.cookies.get('secret_key'), http_request=request)
+
     return redirect('/dashboard')
+
 
 @app.route('/privacy_policy')
 def privacy_policy():
     return render_markdown_page('privacy-policy')
 
+
 @app.route('/tos')
 def tos():
     return render_markdown_page('terms-of-service')
+
 
 @app.route('/how_it_works')
 def how_it_works():
@@ -647,6 +661,7 @@ def how_it_works():
 
 #################################################################################################
 # Main Program / Loop
+
 
 if __name__ == '__main__':
     if in_docker:
