@@ -30,6 +30,7 @@ from dateutil.parser import parse
 from datetime import datetime, timedelta
 import ast
 from werkzeug.routing import BaseConverter
+import base64
 
 #################################################################################################
 # Variables Setup
@@ -44,7 +45,7 @@ if in_docker or override:
     auto_off = None
     headless = True
 
-if auto_off is not None:
+if auto_off != None:
     auto_off_timer = threading.Timer(auto_off, lambda: os._exit(1))
     auto_off_timer.daemon = True
     auto_off_timer.start()
@@ -109,7 +110,7 @@ def decrypt(in_, private_key: str, test=None):
 
     decrypter = PKCS1_OAEP.new(key=private_key)
 
-    if test is not None:
+    if test != None:
         try:
             print(decrypter.decrypt(test.encode(encoding='latin')))
         except ValueError:
@@ -117,7 +118,7 @@ def decrypt(in_, private_key: str, test=None):
 
     out = None
 
-    if in_ is dict:
+    if type(in_) == dict:
         out = {}
         keys = list(in_.keys())
         for key in keys:
@@ -129,13 +130,13 @@ def decrypt(in_, private_key: str, test=None):
             else:
                 out[key] = in_[key]
 
-    elif in_ is str:
+    elif type(in_) == str:
         out = decrypter.decrypt(in_.encode(encoding='latin')).decode(encoding='latin')
 
-    if out is not None:
+    if out != None:
         return out
     else:
-        print('Error: in_ must be a dict or str.')
+        print('Error: in_ must be a dict or str, not a %s' % type(in_))
         exit()
 
 
@@ -154,7 +155,7 @@ def cookies_present(http_request):
     password = http_request.cookies.get('private_key')
     secret_key = http_request.cookies.get('secret_key')
 
-    if username is not None or password is not None or secret_key is not None:
+    if username != None or password != None or secret_key != None:
         try:
             open(f'users/{username}/config.json', 'r').close()
         except FileNotFoundError:
@@ -179,7 +180,7 @@ def load_user_config(http_request, username=None, private_key=None):
     Returns:
         dict: A dict containing the decrypted user config
     """
-    if http_request is not None:
+    if http_request != None:
         with open(f'users/{http_request.cookies.get("username")}/config.json', 'r') as user_config_file:
             user = json.load(user_config_file)
 
@@ -190,7 +191,7 @@ def load_user_config(http_request, username=None, private_key=None):
 
         user = decrypt(user, private_key, test=user['username'])
 
-    if user is False:
+    if user == False:
         return False
 
     try:
@@ -220,9 +221,12 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
         repeat_reload(user['username'], private_key, secret_key)
 
     do_not_encode = False
-    if secret_key is None:
+    if secret_key == None:
         secret_key = request.cookies.get('secret_key')
-        if secret_key is None:
+        if secret_key != None:
+            # Decode the base64-encoded secret_key string to bytes
+            secret_key = base64.b64decode(secret_key)
+        else:
             try:
                 with open(f'users/{user["username"]}/secret_key', 'rb') as secret_key_file:
                     secret_key = secret_key_file.read()
@@ -284,9 +288,9 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
             pass
 
     do_not_encode = False
-    if secret_key is None:
+    if secret_key == None:
         secret_key = http_request.cookies.get('secret_key')
-        if secret_key is None:
+        if secret_key == None:
             try:
                 with open(f'users/{user["username"]}/secret_key', 'rb') as secret_key_file:
                     secret_key = secret_key_file.read()
@@ -294,7 +298,7 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
                     if not in_docker:
                         print('Secret Key is' + str(secret_key) + 'In repeat_reload.')
             except FileNotFoundError:
-                print('Error, I don\'t know what to do here!')
+                print('Error, I don\'t know what to do here! In repeat_reload')
 
     try:
         os.remove(f'users/{user["username"]}/secret_key')
@@ -331,9 +335,9 @@ def format_event(event, event_date):
         event dict: The event dict to change
         event_date datetime.datetime: The date of the event
     """
-    if event['start'] is not None:
+    if event['start'] != None:
         event['start'] = event['start'].strftime('%H:%M')
-    if event['end'] is not None:
+    if event['end'] != None:
         event['end'] = event['end'].strftime('%H:%M')
     event['date'] = event_date.strftime('%d/%m/%Y')
     # If I ever want to add title cleaning then I can test the below comment it out
@@ -402,7 +406,7 @@ def login():
 
 @app.route('/login/finish', methods=['POST'])
 def finish_login():
-    try:
+    #try:
         data = request.form
 
         if data.get('privacyPolicyCheckbox') and data.get('tosCheckbox'):
@@ -451,9 +455,9 @@ def finish_login():
                 secret_key_file.write(secret_key)
 
             response = make_response(render_template('login_complete.jinja', user=fake_user, request=request))
-            response.set_cookie('secret_key', secret_key.decode('latin1'), secure=True)
-            response.set_cookie('username', data['username'], secure=True)
-            response.set_cookie('private_key', private_key.export_key().decode(), secure=True)
+            response.set_cookie('secret_key', base64.b64encode(secret_key).decode('utf-8'))
+            response.set_cookie('username', data['username'])
+            response.set_cookie('private_key', private_key.export_key().decode())
 
             return response
 
@@ -463,8 +467,8 @@ def finish_login():
             else:
                 return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy'
                                 '+policy+and+the+terms+of+service.')
-    except:
-        return redirect('/login?message=Sorry,+we+had+an+error+on+our+end,+please+try+signing+in+again.')
+    #except:
+   #     return redirect('/login?message=Sorry,+we+had+an+error+on+our+end,+please+try+signing+in+again.')
 
 
 @app.route('/dashboard')
