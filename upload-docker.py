@@ -16,7 +16,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
 """
 
 import subprocess
-docker_v = float(open('version.txt').read())
+docker_v = float(open('templates/version.txt').read())
 print("Docker Version: " + str(docker_v))
 
 commands = [f'sudo docker build . -t solderingiron86/better-sentral:{docker_v}',
