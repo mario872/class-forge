@@ -23,4 +23,5 @@ Long term features:
  - [ ] Be able to upload your own profile photo
 
 ### What am I working on right now?
-Developing the Details Page, while working on the main dashboard
+Adding some of the long term features while squashing bugs and streamlining workflow.
+Anyone else looking forward to this being finished?
