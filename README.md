@@ -8,12 +8,12 @@ Soon to be features:
  - [x] Add Sentralify logo to tab
  - [x] See your timetable
  - [x] See daily notices
- - [ ] See attendance
- - [ ] See activities
- - [ ] See awards
+ - [x] See attendance
+ - [x] See activities
+ - [x] See awards
  - [x] Use encryption to store passwords (see, I thought about this!)
  - [x] Use encryption to store timetable, attendance etc.
- - [ ] Add Dark Mode
+ - [x] Add Dark Mode
 
 Long term features:
  - [ ] Search for when your next period of a certain subject is
