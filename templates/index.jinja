@@ -90,7 +90,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
         {% for period in day['periods'] %}
           {% if period.full_name != None %}
             <tr class="m-6">
-              <td class="m-6 w-0.5 px-2 border-2 border-blue-600" style="background-color: #{{ period.border_colour }}">{{ period_num.value }}</td>
+              <td class="m-6 w-0.5 px-2 border-2 border-blue-600" style=" background-color: #{{ period.border_colour }}">{{ period_num.value }}</td>
               <td class="m-6 px-2 border-2 border-blue-600" style="background-color: #{{ period.background_colour }}">
                 <table style="background-color: transparent">
                   <tr>
@@ -151,7 +151,11 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
 
   </div>
 
-  <p class="m-10">Took {{ data['time_elapsed']|float|round(2) }} seconds to gather data</p>
+  <div class="sm:flex sm:items-center sm:justify-between m-10">
+    <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">Took {{ data['time_elapsed']|float|round(2) }} seconds to gather data.</span>
+    <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">Last Updated {{ data['updated'] }}</span>
+  </div>
+
 <!-- End of index.jinja -->
 {% include 'partials/footer.jinja' with context %}
 </body>

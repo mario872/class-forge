@@ -5,3 +5,4 @@ markdown~=3.6
 beautifulsoup4
 python-dateutil~=2.9.0.post0
 Werkzeug~=3.0.1
+requests

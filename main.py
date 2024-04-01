@@ -31,15 +31,16 @@ from datetime import datetime, timedelta
 import ast
 from werkzeug.routing import BaseConverter
 import base64
+import requests
 
 #################################################################################################
 # Variables Setup
 
 headless = True
 in_docker = os.environ.get('IN_DOCKER', False)  # Detects if we are testing, or in a production docker container
-override = False  # Whether to override to test production version
+override = False  # Whether to override to test the production version
 
-auto_off = 600.0  # Whether to automatically turn off the server after a certain period of time, currently 10 minutes
+auto_off = 600  # Whether to automatically turn off the server after a certain period of time, currently 10 minutes (600)
 
 if in_docker or override:
     auto_off = None
@@ -295,6 +296,7 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
     except:
         data = load_user_data(user, private_key, secret_key)
 
+    data['updated'] = datetime.now().strftime('%H:%M %-d/%m/%Y')
     for notice in data['notices']:
         try:
             notice['content'] = markdown.markdown((notice['content']))
@@ -378,9 +380,25 @@ def render_markdown_page(markdown_name: str):
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <link href="{{{{url_for('static',filename='css/output.css')}}}}" rel="stylesheet">
+                <script>
+                  if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {{
+                    document.documentElement.classList.add('dark')
+                  }} else {{
+                    document.documentElement.classList.remove('dark')
+                  }}
+                  
+                  // Whenever the user explicitly chooses light mode
+                  localStorage.theme = 'light'
+                  
+                  // Whenever the user explicitly chooses dark mode
+                  localStorage.theme = 'dark'
+                  
+                  // Whenever the user explicitly chooses to respect the OS preference
+                  localStorage.removeItem('theme')
+                </script>
                 {{% include 'partials/header.jinja' with context %}}
             </head>
-            <body>
+            <body class="bg-white dark:bg-slate-800">
                 <!-- Start of {0}.jinja -->
             <header class="bg-white shadow">
                 <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
@@ -395,6 +413,17 @@ def render_markdown_page(markdown_name: str):
             </body>
             </html>
            """.format(markdown_name, markdown_name.title().replace('-', ' ').replace('_', ' '), mrkdown), user=fake_user)
+
+def get_weather():
+    """
+    A function that gets the weather from weather.jimmyscompany.top
+
+    Returns:
+        dict: The weather
+
+    """
+    weather = requests.get('https://weather.jimmyscompany.top/api')
+    return json.loads(weather.text)
 
 #################################################################################################
 # Routes for server
@@ -415,12 +444,12 @@ def login():
     except KeyError:
         message = ''
 
-    return render_template('login.jinja', user=fake_user, message=message, request=request)
+    return render_template('login.jinja', user=fake_user, message=message, request=request, weather=get_weather())
 
 
 @app.route('/login/finish', methods=['POST'])
 def finish_login():
-    #try:
+    try:
         data = request.form
 
         if data.get('privacyPolicyCheckbox') and data.get('tosCheckbox'):
@@ -468,7 +497,7 @@ def finish_login():
             with open('./users/' + data['username'] + '/secret_key', 'wb') as secret_key_file:
                 secret_key_file.write(secret_key)
 
-            response = make_response(render_template('login_complete.jinja', user=fake_user, request=request))
+            response = make_response(render_template('login_complete.jinja', user=fake_user, request=request, weather=get_weather()))
             response.set_cookie('secret_key', base64.b64encode(secret_key).decode('utf-8'))
             response.set_cookie('username', data['username'])
             response.set_cookie('private_key', private_key.export_key().decode())
@@ -481,8 +510,8 @@ def finish_login():
             else:
                 return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy'
                                 '+policy+and+the+terms+of+service.')
-    #except:
-   #     return redirect('/login?message=Sorry,+we+had+an+error+on+our+end,+please+try+signing+in+again.')
+    except:
+        return redirect('/login?message=Sorry,+we+had+an+error+on+our+end,+please+try+signing+in+again.')
 
 
 @app.route('/dashboard')
@@ -552,7 +581,7 @@ def home():
                     format_event(event, event_date)
                     events_today.append(event)
 
-    return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today, request=request)
+    return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today, request=request, weather=get_weather())
 
 
 @app.route('/timetable')
@@ -570,7 +599,7 @@ def timetable():
 
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
 
-    return render_template('timetable.jinja', user=user, data=data, request=request)
+    return render_template('timetable.jinja', user=user, data=data, request=request, weather=get_weather())
 
 
 @app.route('/calendar')
@@ -632,9 +661,9 @@ def calendar():
 
     data['calendar'] = per_week_calendar
 
-    return render_template('calendar.jinja', user=user, data=data, weeks=weeks, request=request)
+    return render_template('calendar.jinja', user=user, data=data, weeks=weeks, request=request, weather=get_weather())
 
-
+1
 @app.route('/details')
 def details():
     if not cookies_present(request):
@@ -650,7 +679,7 @@ def details():
 
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
 
-    return render_template('details.jinja', user=user, request=request, data=data)
+    return render_template('details.jinja', user=user, request=request, data=data, weather=get_weather())
 
 
 @app.route('/reload')
