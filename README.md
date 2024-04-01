@@ -4,7 +4,7 @@ This website aims to make Sentral look prettier, by completely scrapping the old
 Soon to be features:
  - [ ] Add junk / news section
  - [ ] Add random fake news article about apples each day in 'junk' section
- - [ ] Add daily weather
+ - [x] Add daily weather
  - [x] Add Sentralify logo to tab
  - [x] See your timetable
  - [x] See daily notices
