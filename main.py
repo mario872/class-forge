@@ -256,7 +256,7 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
     return data
 
 
-def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800, http_request=None):
+def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800, http_request=None, automated=False):
     """
     A function that sets a timer to get new data from Sentral
 
@@ -272,14 +272,28 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
 
     global timers
 
-    user = load_user_config(None, username=username, private_key=private_key)
+    user = load_user_config(http_request=None, username=username, private_key=private_key)
+
+    # If it's between or equal to 17:00 and 05:00 then don't refresh the timetable, to avoid excess stress on Sentral
+    # servers
+    if not in_docker:
+        print('Hour: ' + str(datetime.now().hour))
+        print('Is it after or equal to 17: ' + str(17 <= datetime.now().hour))
+        print('Is it before or equal to 5: ' + str(datetime.now().hour <= 5))
+    if (17 <= datetime.now().hour or datetime.now().hour <= 5) and automated:
+        if not in_docker:
+            print('Automated and between 17 and 5')
+        timers.pop(username, None)
+        timers[username] = threading.Timer(refresh_time, repeat_reload, [username, private_key, secret_key, refresh_time, http_request, True])
+        timers[username].start()
+        return
 
     user['headless'] = headless
 
     try:
         data = sentralify(user)
     except:
-        data = load_user_data(username, private_key, secret_key)
+        data = load_user_data(user, private_key, secret_key)
 
     for notice in data['notices']:
         try:
@@ -322,7 +336,7 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
         pass
 
     # 1800.0 for 30 minutes, 600 for 10 minutes
-    timers[username] = threading.Timer(refresh_time, lambda username=username, private_key=private_key, secret_key=secret_key: repeat_reload(username, private_key, secret_key))
+    timers[username] = threading.Timer(refresh_time, repeat_reload, [username, private_key, secret_key, refresh_time, http_request, True])
     timers[username].daemon = True  # Setting it to daemon kills the thread if the main thread exits
     timers[username].start()
 
