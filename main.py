@@ -39,6 +39,7 @@ import requests
 headless = True
 in_docker = os.environ.get('IN_DOCKER', False)  # Detects if we are testing, or in a production docker container
 override = False  # Whether to override to test the production version
+skip_login_check = os.environ.get('DISABLE_SECURITY', False) # Skip checking login for offline testing
 
 auto_off = 600  # Whether to automatically turn off the server after a certain period of time, currently 10 minutes (600)
 
@@ -254,6 +255,7 @@ def load_user_data(user: dict, private_key: str, secret_key: str):
 
     for day in data['timetable']:
         day['date'] = parse(day['date']).strftime('%a %b %-d')
+
     return data
 
 
@@ -412,7 +414,7 @@ def render_markdown_page(markdown_name: str):
             {{% include 'partials/footer.jinja' with context %}}
             </body>
             </html>
-           """.format(markdown_name, markdown_name.title().replace('-', ' ').replace('_', ' '), mrkdown), user=fake_user)
+           """.format(markdown_name, markdown_name.title().replace('-', ' ').replace('_', ' '), mrkdown), user=fake_user, weather=get_weather())
 
 def get_weather():
     """
@@ -422,8 +424,12 @@ def get_weather():
         dict: The weather
 
     """
-    weather = requests.get('https://weather.jimmyscompany.top/api')
-    return json.loads(weather.text)
+    try:
+        weather = requests.get('https://weather.jimmyscompany.top/api')
+        return json.loads(weather.text)
+    except requests.exceptions.ConnectionError:
+        weather = {'current': {'temp': 'No Internet'}, 'daily': [{'weather': [{'icon': "None"}],'temp': {'max': 'No Internet'}}]}
+        return weather
 
 #################################################################################################
 # Routes for server
@@ -710,6 +716,63 @@ def tos():
 @app.route('/how_it_works')
 def how_it_works():
     return render_markdown_page('how-it-works')
+
+#################################################################################################
+# API Methods
+
+#@app.route('/search')
+#def search():
+#    search_text = request.args.get('text')
+#    results = []
+
+#    if search_text == '':
+#        return []
+
+#    if not cookies_present(request):
+#        return []
+
+#    try:
+#        user = load_user_config(request)
+#    except ValueError:
+#        return []
+
+#    if not user:
+#        return []
+
+#    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
+
+    # This duplicates Week A for use in the /search route, if this isn't here,
+    # it won't work for if it's the end of the week
+#    extra_week = []
+#    for day in range(5):
+#        extra_week.append(data['timetable'][day])
+#        extra_week[day]['date'] = (parse(extra_week[day]['date']) + timedelta(days=7)).strftime('%c')
+
+    #print(extra_week)
+
+#    for day in data['timetable']:
+#        data['timetable'].append(day)
+    #print(data['timetable'][0]['date'])
+    #print(data['timetable'][5]['date'])
+    #print(data['timetable'][10]['date'])
+#  raw_periods = []
+#  for day in data['timetable']:
+#        for period in day['periods']:
+#            if period['full_name'] != None and parse(day['date']) >= datetime.now():
+#                period['time'] = datetime(parse(day['date']).year, parse(day['date']).month, parse(day['date']).day,
+#                                          int(period['start'].split(':')[0]), int(period['start'].split(':')[1]))
+
+#                raw_periods.append(period)
+
+#    for period in raw_periods:
+#        if search_text.lower() in period['full_name'].lower():
+#            results.append(f'{period["full_name"]}: {period["time"].strftime("%a %b %-d %H:%M")}')
+
+#    del results
+#    del data
+#    del extra_week
+
+#    return results
 
 #################################################################################################
 # Main Program / Loop

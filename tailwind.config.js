@@ -4,6 +4,7 @@ module.exports = {
             "./templates/partials/*.jinja",
             "./templates/*.html",
             "./templates/partials/*.html",
+            "./node_modules/flowbite/**/*.js",
             ],
   theme: {},
   plugins: [require('@tailwindcss/forms'),

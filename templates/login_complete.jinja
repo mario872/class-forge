@@ -44,14 +44,8 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
 <body>
 
 <!-- Start of login_complete.jinja -->
-  <header class="bg-white shadow">
-    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <h1 class="text-3xl font-bold tracking-tight text-gray-900">Login</h1>
-    </div>
-  </header>
-
-<main class="grid min-h-full place-items-center px-6 py-24 sm:py-32 lg:px-8">
-  <div class="text-center">
+<main class="grid place-items-center px-6 py-24 sm:py-32 lg:px-8" style="height: 95vh;">
+  <div class="text-center" style="align-items: top;">
     <p class="text-base font-semibold text-blue-600">Login Complete!</p>
     <h1 class="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">You Did It!</h1>
     <p class="mt-6 text-base leading-7 text-gray-600">Now you've been logged in, you can head back home to your dashboard!</p>
@@ -61,5 +55,6 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
   </div>
 </main>
 <!-- End of login_complete.jinja -->
+{% include 'partials/footer.jinja' with context %}
 </body>
 </html>
