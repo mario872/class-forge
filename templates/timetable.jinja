@@ -76,7 +76,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
             {% set current_period = data['timetable'][:5][day_num.value]['periods'][x] %}
             <td class="m-6 border-2 border-blue-600 bg-inherit" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
               {% if current_period.full_name == None and current_period.name == None %}
-                <p class="pl-1 dark:text-white">Free Period!</p>
+                <p class="pl-1 dark:text-white"></p>
               {% else %}
                 <table class="" style="background-color: transparent">
                   <tr>
@@ -140,7 +140,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
             {% set current_period = data['timetable'][5:10][day_num.value]['periods'][x] %}
             <td class="m-6 border-2 border-blue-600 bg-inherit" style="background-color: #{{ current_period.background_colour }}; border-left: 7px solid #{{ current_period.border_colour }};">
               {% if current_period.full_name == None and current_period.name == None %}
-                <p class="pl-1 dark:text-white">Free Period!</p>
+                <p class="pl-1 dark:text-white"></p>
               {% else %}
                 <table class="" style="background-color: transparent">
                   <tr>
