@@ -720,59 +720,59 @@ def how_it_works():
 #################################################################################################
 # API Methods
 
-#@app.route('/search')
-#def search():
-#    search_text = request.args.get('text')
-#    results = []
+@app.route('/search')
+def search():
+    search_text = request.args.get('text')
+    results = []
 
-#    if search_text == '':
-#        return []
+    if search_text == '':
+        return []
 
-#    if not cookies_present(request):
-#        return []
+    if not cookies_present(request):
+        return []
 
-#    try:
-#        user = load_user_config(request)
-#    except ValueError:
-#        return []
+    try:
+        user = load_user_config(request)
+    except ValueError:
+        return []
 
-#    if not user:
-#        return []
+    if not user:
+        return []
 
-#    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
+    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
 
     # This duplicates Week A for use in the /search route, if this isn't here,
     # it won't work for if it's the end of the week
-#    extra_week = []
-#    for day in range(5):
-#        extra_week.append(data['timetable'][day])
-#        extra_week[day]['date'] = (parse(extra_week[day]['date']) + timedelta(days=7)).strftime('%c')
+    #extra_week = []
+    #for day in range(5):
+    #    extra_week.append(data['timetable'][day])
+    #    extra_week[day]['date'] = (parse(extra_week[day]['date']) + timedelta(days=7)).strftime('%c')
 
     #print(extra_week)
 
-#    for day in data['timetable']:
-#        data['timetable'].append(day)
+    #for day in data['timetable']:
+    #    data['timetable'].append(day)
     #print(data['timetable'][0]['date'])
     #print(data['timetable'][5]['date'])
     #print(data['timetable'][10]['date'])
-#  raw_periods = []
-#  for day in data['timetable']:
-#        for period in day['periods']:
-#            if period['full_name'] != None and parse(day['date']) >= datetime.now():
-#                period['time'] = datetime(parse(day['date']).year, parse(day['date']).month, parse(day['date']).day,
-#                                          int(period['start'].split(':')[0]), int(period['start'].split(':')[1]))
+    raw_periods = []
+    for day in data['timetable']:
+        for period in day['periods']:
+            if period['full_name'] != None and parse(day['date']) >= datetime.now():
+                period['time'] = datetime(parse(day['date']).year, parse(day['date']).month, parse(day['date']).day,
+                                          int(period['start'].split(':')[0]), int(period['start'].split(':')[1]))
 
-#                raw_periods.append(period)
+                raw_periods.append(period)
 
-#    for period in raw_periods:
-#        if search_text.lower() in period['full_name'].lower():
-#            results.append(f'{period["full_name"]}: {period["time"].strftime("%a %b %-d %H:%M")}')
+    for period in raw_periods:
+        if search_text.lower() in period['full_name'].lower():
+            results.append(f'{period["full_name"]}: {period["time"].strftime("%a %b %-d %H:%M")}')
 
-#    del results
-#    del data
-#    del extra_week
+    #del results
+    #del data
+    #del extra_week
 
-#    return results
+    return results
 
 #################################################################################################
 # Main Program / Loop

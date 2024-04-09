@@ -156,7 +156,6 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
     </div>
 
     <!-- Searcher -->
-    <!--
     <div id="search-grid" class="top-0 m-6">
       <table class="table-auto border-2 border-blue-600 w-full h-full">
         <tr>
@@ -177,7 +176,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
         </tr>
       </table>
     </div>
-    -->
+
     <!-- Periods Left Counter -->
 
     <!-- Reminders -->
@@ -193,7 +192,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
 <!-- End of index.jinja -->
 {% include 'partials/footer.jinja' with context %}
 </body>
-<!-- <script type="text/javascript">
+ <script type="text/javascript">
   const searchInput = document.getElementById('search-input');
   const searchResults = document.getElementById('search-results');
 
@@ -209,13 +208,18 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
      .then(response => response.json())
      .then(data => {
         searchResults.innerHTML = '';
-        data.forEach(result => {
+        data.forEach((result, index) => {
           const p = document.createElement('p');
           p.classList.add('p-2')
+          if (index === 0) {
+            p.classList.add('font-semibold');
+            p.classList.add('text-');
+            p.classList.add('');
+          }
           p.innerHTML = result;
           searchResults.appendChild(p);
         });
       });
   });
-</script> -->
+</script>
 </html>
