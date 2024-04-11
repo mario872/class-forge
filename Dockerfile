@@ -22,6 +22,7 @@ COPY static /home/class-forge/static
 COPY templates /home/class-forge/templates
 RUN mkdir /home/class-forge/users
 COPY main.py /home/class-forge/main.py
+COPY functions.py /home/class-forge/functions.py
 COPY requirements.txt /home/class-forge/requirements.txt
 
 RUN python3 -m pip install --upgrade -r /home/class-forge/requirements.txt
