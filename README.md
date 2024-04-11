@@ -16,12 +16,12 @@ Soon to be features:
  - [x] Add Dark Mode
 
 Long term features:
- - [ ] Search for when your next period of a certain subject is
- - [ ] Periods Left Counter
+ - [x] Search for when your next period of a certain subject is
+ - [x] Periods Left Counter
  - [ ] Reminders on the webpage
  - [ ] A recurring list of items you need each lesson on the webpage
  - [ ] Be able to upload your own profile photo
 
 ### What am I working on right now?
-Adding some of the long term features while squashing bugs and streamlining workflow.
+Adding reminders and being able to upload your own profile photo.
 Anyone else looking forward to this being finished?
