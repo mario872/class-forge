@@ -758,10 +758,9 @@ def search():
     raw_periods = []
     for day in data['timetable']:
         for period in day['periods']:
-            if period['full_name'] != None and parse(day['date']) >= datetime.now():
-                period['time'] = datetime(parse(day['date']).year, parse(day['date']).month, parse(day['date']).day,
-                                          int(period['start'].split(':')[0]), int(period['start'].split(':')[1]))
-
+            period['time'] = datetime(parse(day['date']).year, parse(day['date']).month, parse(day['date']).day,
+                                      int(period['start'].split(':')[0]), int(period['start'].split(':')[1]))
+            if period['full_name'] != None and period['time'] >= datetime.now():
                 raw_periods.append(period)
 
     for period in raw_periods:

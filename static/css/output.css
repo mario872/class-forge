@@ -2030,6 +2030,16 @@ label:is(.dark *) {
   margin-bottom: 1.5rem;
 }
 
+.mx-1 {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+
+.my-2 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .-mr-2 {
   margin-right: -0.5rem;
 }
@@ -2217,6 +2227,15 @@ label:is(.dark *) {
 .w-max {
   width: -moz-max-content;
   width: max-content;
+}
+
+.w-min {
+  width: -moz-min-content;
+  width: min-content;
+}
+
+.w-11\/12 {
+  width: 91.666667%;
 }
 
 .max-w-7xl {

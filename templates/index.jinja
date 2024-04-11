@@ -157,7 +157,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
 
     <!-- Searcher -->
     <div id="search-grid" class="top-0 m-6">
-      <table class="table-auto border-2 border-blue-600 w-full h-full">
+      <table id="search-table" class="table-auto border-2 border-blue-600 w-full h-full">
         <tr>
           <th class="m-6 border-2 border-blue-600 text-center border-collapse h-5 text-black dark:text-zinc-300">Timetable Searcher</th>
         </tr>
@@ -166,10 +166,9 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
         </tr>
         <tr>
           <td class="m-6 border-2 border-blue-600 text-center border-collapse text-black dark:text-zinc-300">
-            <input id="search-input" type="text" class="w-full p-2 border-2 border-blue-600" placeholder="Search for a class">
-          </td>
+            <input id="search-input" type="text" class="w-11/12 p-2 m-2 border-2 border-blue-600" placeholder="Search for a class"></td>
         </tr>
-        <tr>
+        <tr id="search-results-row" class="hidden">
           <td class="m-6 border-2 border-blue-600 text-center border-collapse text-black dark:text-zinc-300">
               <div id="search-results"></div>
           </td>
@@ -207,14 +206,13 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
     })
      .then(response => response.json())
      .then(data => {
-        searchResults.innerHTML = '';
+     document.getElementById('search-results-row').classList.remove('hidden')
+      searchResults.innerHTML = '';
         data.forEach((result, index) => {
           const p = document.createElement('p');
           p.classList.add('p-2')
           if (index === 0) {
             p.classList.add('font-semibold');
-            p.classList.add('text-');
-            p.classList.add('');
           }
           p.innerHTML = result;
           searchResults.appendChild(p);
