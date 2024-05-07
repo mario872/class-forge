@@ -57,8 +57,6 @@ fake_user = {'username': 'your.name',
              'base_ur': 'caringbahhs',
              'photo_path': 'static/Rick Astley.jpg'}
 
-timers = {}  # Used to store all the timers used to automatically scrape Sentral
-
 app = Flask(__name__)
 
 ################################################################################################
@@ -158,7 +156,8 @@ def finish_login():
             else:
                 return redirect('/login?message=Sorry,+those+login+details+are+incorrect.\nPlease+accept+the+privacy'
                                 '+policy+and+the+terms+of+service.')
-    except:
+    except Exception as r:
+        print(r)
         return redirect('/login?message=Sorry,+we+had+an+error+on+our+end,+please+try+signing+in+again.')
 
 
@@ -454,6 +453,40 @@ def search():
     #del extra_week
 
     return results
+@app.route('/reminders/add')
+def add_reminder():
+    if not cookies_present(request):
+        return [{'name': 'Error, no cookies present!', 'due': '2085'}]
+
+    try:
+        user = load_user_config(request)
+    except ValueError:
+        return [{'name': 'Error, no cookies present!', 'due': '2085'}]
+
+    if not user:
+        return [{'name': 'Error, no cookies present!', 'due': '2085'}]
+
+    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
+
+    data['reminders'].append({'name': request.args.get('name'), 'due': request.args.get('due')})
+
+    save_user_data(data, request.cookies.get('secret_key'), user['username'])
+
+
+@app.route('/reminders/get')
+def get_reminders():
+    if not cookies_present(request):
+        return [{'name': 'Error, no cookies present!', 'due': '2085'}]
+
+    try:
+        user = load_user_config(request)
+    except ValueError:
+        return [{'name': 'Error, no cookies present!', 'due': '2085'}]
+
+    if not user:
+        return [{'name': 'Error, no cookies present!', 'due': '2085'}]
+
+    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
 
 #################################################################################################
 # Main Program / Loop

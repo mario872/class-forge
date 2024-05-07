@@ -35,7 +35,9 @@ import threading
 from sentralify import sentralify
 from flask import render_template_string
 
-from main import in_docker, headless, fake_user, timers  # Risky move, but imports variables from main
+from main import in_docker, headless, fake_user  # Risky move, but imports variables from main
+
+timers = {}
 
 def decrypt(in_, private_key: str, test=None):
     """
@@ -380,3 +382,12 @@ def get_weather():
         weather = {'current': {'temp': 'No Internet'},
                    'daily': [{'weather': [{'icon': "None"}], 'temp': {'max': 'No Internet'}}]}
         return weather
+
+def save_user_data(data, secret_key, username):
+    with open(f'users/{username}/data.json', 'wb') as data_json:
+        padded_data = f'{data}' + ('~' * ((16 - len(f'{data}')) % 16))
+        cipher = AES.new(secret_key.encode('latin1'), AES.MODE_ECB)
+        padded_data = padded_data.encode('ascii')
+        padded_data = cipher.encrypt(padded_data)
+        padded_data = b64encode(padded_data)
+        data_json.write(padded_data)
