@@ -181,7 +181,7 @@ def home():
 
     three_day_timetable = []
     if not datetime.now().weekday() in [0, 4, 5, 6]:
-        possible_days = [datetime.now() - timedelta(days=1), datetime.now(), datetime.now() + timedelta(days=1)]
+        possible_days = [datetime.now(), datetime.now() + timedelta(days=1), datetime.now() + timedelta(days=2)]
     else:
         if datetime.now().weekday() == 0:
             possible_days = [datetime.now() - timedelta(days=3), datetime.now(), datetime.now() + timedelta(days=1)]
@@ -268,7 +268,7 @@ def home():
     for key in list(periods_left.keys()):
         list_periods_left.append({'name': key, 'periods_left': periods_left[key]})
 
-    return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today, request=request, weather=get_weather(), periods_left=list_periods_left)
+        return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today, request=request, weather=get_weather(), periods_left=list_periods_left)
 
 
 @app.route('/timetable')
