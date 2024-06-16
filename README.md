@@ -23,5 +23,4 @@ Long term features:
  - [ ] Be able to upload your own profile photo
 
 ### What am I working on right now?
-Adding reminders and being able to upload your own profile photo.
-Anyone else looking forward to this being finished?
+Currently on hiatus, when I get back to it I'll be working on stability issues and finishing the final few features.
