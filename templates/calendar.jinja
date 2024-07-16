@@ -64,7 +64,7 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
       {% for day in range(5) %}
         <td class="border-2 border-blue-600 bg-blue-100 dark:bg-blue-900">
           {% for event in week[day] %}
-            <div {% if 'Event' in event.title and not 'Week' in event.title %} class="p-2 m-2 rounded border-2 border-green-400 bg-green-100 dark:border-green-950 dark:bg-emerald-800" {% elif 'Week' in event.title %} class="p-2 m-2 rounded border-2 border-yellow-400 bg-yellow-100 dark:border-yellow-900 dark:bg-amber-700" {% elif "Assessment" in event.title %} class="p-2 m-2 rounded border-2 border-red-400 bg-red-100 dark:border-rose-950 dark:bg-rose-700" {% endif %}>
+            <div {% if ('Year ' ~ data.student_details.school_year in event.title) or ('Yr ' ~ data.student_details.school_year in event.title) or ('Yr' ~ data.student_details.school_year in event.title) %} class="p-2 m-2 rounded border-2 border-purple-400 bg-violet-300 dark:border-violet-950 dark:bg-violet-800" {% elif 'Event' in event.title and not 'Week' in event.title %} class="p-2 m-2 rounded border-2 border-green-400 bg-green-100 dark:border-green-950 dark:bg-emerald-800" {% elif 'Week' in event.title %} class="p-2 m-2 rounded border-2 border-yellow-400 bg-yellow-100 dark:border-yellow-900 dark:bg-amber-700" {% elif "Assessment" in event.title %} class="p-2 m-2 rounded border-2 border-red-400 bg-red-100 dark:border-rose-950 dark:bg-rose-700" {% endif %}>
               <p>{{ event.title }}</p>
             </div>
           {% endfor %}
