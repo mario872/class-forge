@@ -5,7 +5,7 @@ LABEL maintainer="jamesaglynn10@gmail.com"
 LABEL version="0.34"
 LABEL description="This is the docker image for class-forge"
 
-ENV IN_DOCKER true
+ENV IN_DOCKER=true
 
 ARG DEBIAN_FRONTEND=noninteractive
 
