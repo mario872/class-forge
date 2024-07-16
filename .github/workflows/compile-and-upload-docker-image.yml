@@ -1,0 +1,20 @@
+name: Compile New Docker Image
+run-name: Compiling New Docker Image of Class Forge
+on:
+  push:
+    paths:
+      - 'upload-docker.py'
+jobs:
+  CompileAndUploadDockerImage:
+    runs-on: ubuntu-latest
+    steps:
+      # Clone class-forge repo locally
+      - run: git clone https://github.com/mario872/class-forge
+      # Log into Docker Hub
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # Run upload-docker.py
+      - run: python upload-docker.py
+        working-directory: ./class-forge
