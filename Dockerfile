@@ -32,4 +32,4 @@ RUN python3 -m playwright install-deps
 
 EXPOSE 80 443
 
-CMD [ "python3", "/home/class-forge/main.py"]
+CMD ["python3", "/home/class-forge/main.py"]

@@ -11,10 +11,10 @@ jobs:
       # Clone class-forge repo locally
       - run: git clone https://github.com/mario872/class-forge
       # Log into Docker Hub
-      - run: docker login -u "$username" -p "$password"
+      - run: docker login -u "$username" -p "$password" && python upload-docker.py
         env:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       # Run upload-docker.py
-      - run: python upload-docker.py
-        working-directory: ./class-forge
+      #- run: python upload-docker.py
+      #  working-directory: ./class-forge
