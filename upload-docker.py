@@ -20,7 +20,7 @@ docker_v = float(open('templates/version.txt').read())
 print("Docker Version: " + str(docker_v))
 
 commands = [f'sudo docker build . -t solderingiron86/better-sentral:{docker_v}',
-            f'sudo docker run --name better-sentral-{docker_v} -p 5000:5000 solderingiron86/better-sentral:{docker_v}',
+            #f'sudo docker run --name better-sentral-{docker_v} -p 5000:5000 solderingiron86/better-sentral:{docker_v}',
             f'sudo docker push solderingiron86/better-sentral:{docker_v}',
             f'sudo docker image tag solderingiron86/better-sentral:{docker_v} solderingiron86/better-sentral:latest',
             'sudo docker push solderingiron86/better-sentral:latest',
