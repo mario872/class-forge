@@ -3,7 +3,7 @@
 FROM python:3.11-slim-bullseye
 LABEL maintainer="jamesaglynn10@gmail.com"
 LABEL version="0.34"
-LABEL description="This is the docker image for class-forge"
+LABEL description="This is the docker image for Class Forge"
 
 ENV IN_DOCKER=true
 
