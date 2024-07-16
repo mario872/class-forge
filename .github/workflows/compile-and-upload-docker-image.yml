@@ -3,7 +3,7 @@ run-name: Compiling New Docker Image of Class Forge
 on:
   push:
     paths:
-      - 'upload-docker.py'
+      - 'Dockerfile'
 jobs:
   CompileAndUploadDockerImage:
     runs-on: ubuntu-latest
