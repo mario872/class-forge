@@ -60,24 +60,30 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
       <div class="p-2 border-2 border-blue-600">
       <div class="m-6 p-2 border-2 border-blue-600">
         <h3 class="text-xl">Awards</h3>
+        {% for row in range(details['awards']|length) %}
         <table class="m-2 border-2 border-blue-600">
           <tr class="m-6 p-2 border-2 border-blue-600">
+            <th class="p-2 border-2 border-blue-600 text-sm">Year</th>
+            <td class="p-2 border-2 border-blue-600 text-sm text-black dark:text-zinc-300">{{ details['awards'][row]['year'] }}</td>
+          </tr>
+          <tr class="m-6 p-2 border-2 border-blue-600">
             <th class="p-2 border-2 border-blue-600 text-sm">Term 1</th>
-            <td class="p-2 border-2 border-blue-600 text-sm" style="background-color: rgb({{ (5 - data['student_details']['awards'][0]['terms'][1]|int) * 51 }}, {{ (0 + data['student_details']['awards'][0]['terms'][1]|int) * 51 }}, 0);">{{ data['student_details']['awards'][0]['terms'][1] }}</td>
+            <td class="p-2 border-2 border-blue-600 text-sm" style="background-color: rgb({{ (5 - details['awards'][row][1]|int) * 51 }}, {{ (0 + details['awards'][row][1]|int) * 51 }}, 0);">{{ details['awards'][row][1] }}</td>
           </tr>
           <tr>
             <th class="p-2 border-2 border-blue-600 text-sm">Term 2</th>
-            <td class="p-2 border-2 border-blue-600 text-sm" style="background-color: rgb({{ (5 - data['student_details']['awards'][0]['terms'][2]|int) * 51 }}, {{ (0 + data['student_details']['awards'][0]['terms'][1]|int) * 51 }}, 0);">{{ data['student_details']['awards'][0]['terms'][2] }}</td>
+            <td class="p-2 border-2 border-blue-600 text-sm" style="background-color: rgb({{ (5 - details['awards'][row][2]|int) * 51 }}, {{ (0 + details['awards'][row][2]|int) * 51 }}, 0);">{{ details['awards'][row][2] }}</td>
           </tr>
           <tr>
             <th class="p-2 border-2 border-blue-600 text-sm">Term 3</th>
-            <td class="p-2 border-2 border-blue-600 text-sm" style="background-color: rgb({{ (5 - data['student_details']['awards'][0]['terms'][3]|int) * 51 }}, {{ (0 + data['student_details']['awards'][0]['terms'][1]|int) * 51 }}, 0);">{{ data['student_details']['awards'][0]['terms'][3] }}</td>
+            <td class="p-2 border-2 border-blue-600 text-sm" style="background-color: rgb({{ (5 - details['awards'][row][3]|int) * 51 }}, {{ (0 + details['awards'][row][3]|int) * 51 }}, 0);">{{ details['awards'][row][3] }}</td>
           </tr>
           <tr>
             <th class="p-2 border-2 border-blue-600 text-sm">Term 4</th>
-            <td class="p-2 border-2 border-blue-600 text-sm" style="background-color: rgb({{ (5 - data['student_details']['awards'][0]['terms'][4]|int) * 51 }}, {{ (0 + data['student_details']['awards'][0]['terms'][1]|int) * 51 }}, 0);">{{ data['student_details']['awards'][0]['terms'][4] }}</td>
+            <td class="p-2 border-2 border-blue-600 text-sm" style="background-color: rgb({{ (5 - details['awards'][row][4]|int) * 51 }}, {{ (0 + details['awards'][row][4]|int) * 51 }}, 0);">{{ details['awards'][row][4] }}</td>
           </tr>
         </table>
+        {% endfor %}
       </div>
       <!-- 
       <div class="m-6 p-2 border-2 border-blue-600">
