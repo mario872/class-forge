@@ -23,4 +23,4 @@ Long term features:
  - [ ] Be able to upload your own profile photo
 
 ### What am I working on right now?
-Currently on hiatus, when I get back to it I'll be working on stability issues and finishing the final few features.
+This afternoon (5/07/24) I'll fix the encryption errors and maybe push the last few commits over the weekend. But Sentral may be uncooperative over the school holidays.
