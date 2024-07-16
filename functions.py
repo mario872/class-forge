@@ -201,7 +201,7 @@ def load_user_data(user: dict, private_key: str, secret_key: str, request=None):
         data = ast.literal_eval(data)
 
     for day in data['timetable']:
-        day['date'] = parse(day['date']).strftime('%a %b %-d')
+        day['date'] = parse(day['date']).strftime('%a %b %d')
 
     return data
 
@@ -246,7 +246,7 @@ def repeat_reload(username: str, private_key: str, secret_key, refresh_time=1800
     except:
         data = load_user_data(user, private_key, secret_key)
 
-    data['updated'] = datetime.now().strftime('%H:%M %-d/%m/%Y')
+    data['updated'] = datetime.now().strftime('%H:%M %d/%m/%Y')
     for notice in data['notices']:
         try:
             notice['content'] = markdown.markdown((notice['content']))
