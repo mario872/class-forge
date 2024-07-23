@@ -23,4 +23,4 @@ Long term features:
  - [ ] Be able to upload your own profile photo
 
 ### What am I working on right now?
-This afternoon (5/07/24) I'll fix the encryption errors and maybe push the last few commits over the weekend. But Sentral may be uncooperative over the school holidays.
+Fixed the errors. May add mmore features, but probably not. Feel free to create PRs with new features though.
