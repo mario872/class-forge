@@ -1,0 +1,18 @@
+name: Reset Server Docker Image
+run-name: Resetting server docker image
+on:
+  push:
+    paths:
+      - 'UPDATE'
+jobs:
+  ResetServerDockerImage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reset using ssh
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: docker stop class-forge && docker rm class-forge && docker run -d --restart always --name class-forge -p 5000:5000 solderingiron86/better-sentral:latest
