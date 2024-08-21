@@ -134,7 +134,7 @@ def finish_login():
                           'photo_path': f'user/{data["username"]}"/photo.png'
                         }
 
-        if sentralify(user, check_login=True):
+        if sentralify(user, check_login=True, timeout=10):
             with open(f'users/{user["username"]}/config.json', 'w') as user_config:
                 json.dump(encrypted_user, user_config)
 
