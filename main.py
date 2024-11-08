@@ -19,22 +19,27 @@ along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
 # Imports
 
 from flask import *
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from datetime import datetime, timedelta
-from werkzeug.routing import BaseConverter
+from werkzeug.security import generate_password_hash, check_password_hash
 import ics
 import pytz
+import zlib
+from functools import wraps
 
 from functions import *
 
 #################################################################################################
 # Variables Setup
 
-headless = True
+users = []  # THIS IS THE VARIABLE FOR ALL USERS SAVED IN CODE, SO NOT AVAILABLE UPON RESTART
+
+headless = False
 in_docker = os.environ.get('IN_DOCKER', False)  # Detects if we are testing, or in a production docker container
 override = False  # Whether to override to test the production version
 skip_login_check = os.environ.get('DISABLE_SECURITY', False) # Skip checking login for offline testing
 
-auto_off = 600 # Whether to automatically turn off the server after a certain period of time, currently 10 minutes (600)
+auto_off = 600  # Whether to automatically turn off the server after a certain period of time, currently 10 minutes (600)
 
 if in_docker or override:
     auto_off = None
@@ -50,37 +55,63 @@ if override:
 
 timezone_hours_ahead = 10
 
+login_manager = LoginManager()
+
 # A template user to use, when the user is not signed in, used on login screen, tos, etc.
 fake_user = {'username': 'your.name',
              'password': 'your_password',
              'state': 'nsw',
-             'base_ur': 'caringbahhs',
+             'base_url': 'caringbahhs',
              'photo_path': 'static/Rick Astley.jpg'}
 
 app = Flask(__name__)
 
+app.secret_key = b'5e3cb545c705a0ceb95ac8dcf1d63d5df60cdbaccdf73a6f4cd44a73a5a7528e'
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=14)
+app.config['SESSION_COOKIE_SECURE'] = True
+
+login_manager.init_app(app)
+
 ################################################################################################
-# Functions
+# Classes and Login
 
 
-class RegexConverter(BaseConverter):  # Unused regex converter for url routing
-    def __init__(self, url_map, *items):
-        super(RegexConverter, self).__init__(url_map)
-        self.regex = items[0]
+class User(UserMixin):
+    def __init__(self, username, password, state, base_url):
+        self.username = username
+        self.password = password
+        self.state = state,
+        self.base_url = base_url
+
+    def get_id(self):
+        return self.username
 
 
-app.url_map.converters['regex'] = RegexConverter
+@login_manager.user_loader
+def load_user(user_username):
+    for user in users:
+        if user['username'] == user_username:
+            return User(user_username, user['password'], user['state'], user['base_url'])
+    return None
+
+
+def initial_login_required(func):
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if current_user.is_authenticated:
+            return func(*args, **kwargs)
+        else:
+            return redirect('/login')
+    return decorated_view
 
 #################################################################################################
 # Routes for server
 
 
 @app.route('/')
+@initial_login_required
 def one():
-    if cookies_present(request):
-        return redirect('/dashboard')
-    else:
-        return redirect('/login')
+    return redirect('/dashboard')
 
 
 @app.route('/login')
@@ -90,7 +121,7 @@ def login():
     except KeyError:
         message = ''
 
-    return render_template('login.jinja', user=fake_user, message=message, request=request, weather=get_weather())
+    return render_template('login.jinja', user=fake_user, message=message, weather=get_weather())
 
 
 @app.route('/login/finish', methods=['POST'])
@@ -103,50 +134,24 @@ def finish_login():
         else:
             return redirect('/login?message=Please+accept+the+privacy+policy+and+the+terms+of+service.')
 
-        os.makedirs('users/' + data['username'], exist_ok=True)
+        username = data['username']
+        password = data['password']
+        base_url = data['base_url']
+        state = data['state']
+        remember = data.get('rememberMeCheckbox')
 
-        private_key = RSA.generate(2048)
-        public_key = private_key.publickey()
-        encrypter = PKCS1_OAEP.new(key=public_key)
+        user = User(username, password, state, base_url)
 
-        username = data['username'].lower().encode(encoding='latin')
-        username = encrypter.encrypt(username).decode(encoding='latin')
-        password = data['password'].encode(encoding='latin')
-        password = encrypter.encrypt(password).decode(encoding='latin')
-        base_url = data['base_url'].lower().encode(encoding='latin')
-        base_url = encrypter.encrypt(base_url).decode(encoding='latin')
-        state = data['state'].encode(encoding='latin')
-        state = encrypter.encrypt(state).decode(encoding='latin')
-        theme = encrypter.encrypt('dark'.encode(encoding='latin')).decode(encoding='latin')
+        user_dict = user_to_dict(user)
 
-        user = {'username': data['username'],
-                'password': data['password'],
-                'base_url': data['base_url'],
-                'state': data['state'],
-                'headless': headless
-                }
+        if sentralify(user_dict, check_login=True, timeout=10):
+            users.append(user_dict)
+            login_user(user, remember=remember)
 
-        encrypted_user = {'username': username,
-                          'password': password,
-                          'base_url': base_url,
-                          'state': state,
-                          'theme': theme,
-                          'photo_path': f'user/{data["username"]}"/photo.png'
-                        }
+            with open(f'users/{zlib.adler32(user.username.encode())}.json', 'w') as f:
+                f.write('')
 
-        if sentralify(user, check_login=True, timeout=10):
-            with open(f'users/{user["username"]}/config.json', 'w') as user_config:
-                json.dump(encrypted_user, user_config)
-
-            secret_key = os.urandom(24)
-
-            with open('./users/' + data['username'] + '/secret_key', 'wb') as secret_key_file:
-                secret_key_file.write(secret_key)
-
-            response = make_response(render_template('login_complete.jinja', user=fake_user, request=request, weather=get_weather()))
-            response.set_cookie('secret_key', base64.b64encode(secret_key).decode('utf-8'))
-            response.set_cookie('username', data['username'])
-            response.set_cookie('private_key', private_key.export_key().decode())
+            response = make_response(render_template('login_complete.jinja', user=fake_user, weather=get_weather()))
 
             return response
 
@@ -162,20 +167,12 @@ def finish_login():
 
 
 @app.route('/dashboard')
+@login_required
 def home():
-    if not cookies_present(request):
-        return redirect('/login')
+    user = current_user
 
     try:
-        user = load_user_config(request)
-    except ValueError:
-        return redirect('/login')
-
-    if not user:
-        return redirect('/login')
-
-    try:
-        data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
+        data = load_user_data(user)
     except AttributeError:
         return redirect('/login')
 
@@ -198,8 +195,8 @@ def home():
                 three_day_timetable.append(day)
 
     try:
-        tmp = timers[user['username']]
-        message = None
+        tmp = timers[user.username]
+        message = request.args.get('message')
     except KeyError:
         message = 'Automatic reloading is not enabled, please press the fetch timetable button.'
 
@@ -268,41 +265,24 @@ def home():
     for key in list(periods_left.keys()):
         list_periods_left.append({'name': key, 'periods_left': periods_left[key]})
 
-        return render_template('index.jinja', user=user, data=data, message=message, tdt=three_day_timetable, today_calendar=events_today, request=request, weather=get_weather(), periods_left=list_periods_left)
+        return render_template('index.jinja', user=user_to_dict(user), data=data, message=message, tdt=three_day_timetable, today_calendar=events_today, weather=get_weather(), periods_left=list_periods_left)
 
 
 @app.route('/timetable')
+@login_required
 def timetable():
-    if not cookies_present(request):
-        return redirect('/login')
+    user = current_user
 
-    try:
-        user = load_user_config(request)
-    except ValueError:
-        return redirect('/login')
+    data = load_user_data(user)
 
-    if not user:
-        return redirect('/login')
-
-    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
-
-    return render_template('timetable.jinja', user=user, data=data, request=request, weather=get_weather())
+    return render_template('timetable.jinja', user=user_to_dict(user), data=data, weather=get_weather())
 
 
 @app.route('/calendar')
+@login_required
 def calendar():
-    if not cookies_present(request):
-        return redirect('/login')
-
-    try:
-        user = load_user_config(request)
-    except ValueError:
-        return redirect('/login')
-
-    if not user:
-        return redirect('/login')
-
-    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
+    user = current_user
+    data = load_user_data(user)
 
     # Organise calendar list by date
     data['calendar'] = sorted(data['calendar'], key=lambda x: parse(x['date']))
@@ -348,40 +328,26 @@ def calendar():
 
     data['calendar'] = per_week_calendar
 
-    return render_template('calendar.jinja', user=user, data=data, weeks=weeks, request=request, weather=get_weather())
+    return render_template('calendar.jinja', user=user_to_dict(user), data=data, weeks=weeks, weather=get_weather())
 
-1
+
 @app.route('/details')
+@login_required
 def details():
-    if not cookies_present(request):
-        return redirect('/login')
+    user = current_user
+    data = load_user_data(user)
 
-    try:
-        user = load_user_config(request)
-    except ValueError:
-        return redirect('/login')
-
-    if not user:
-        return redirect('/login')
-
-    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
-
-    return render_template('details.jinja', user=user, request=request, data=data, weather=get_weather())
+    return render_template('details.jinja', user=user_to_dict(user), data=data, weather=get_weather())
 
 
 @app.route('/reload')
+@login_required
 def reload():
-    if not cookies_present(request):
-        return redirect('/login')
+    user = current_user
 
-    try:
-        user = load_user_config(request)
-    except ValueError:
-        return redirect('/login')
+    repeat_reload(user=user, http_request=request)
 
-    repeat_reload(username=user['username'], private_key=request.cookies.get('private_key'), secret_key=request.cookies.get('secret_key'), http_request=request)
-
-    return redirect('/dashboard')
+    return redirect('/dashboard?message=Warning%20lots%20of%20features%20are%20still%20broken%20and%20may%20not%20be%20fixed%20anytime%20soon')
 
 
 @app.route('/privacy_policy')
@@ -402,25 +368,20 @@ def how_it_works():
 # API Methods
 
 @app.route('/search')
+@login_required
 def search():
+    user = current_user
+
     search_text = request.args.get('text')
     results = []
 
     if search_text == '':
         return []
 
-    if not cookies_present(request):
-        return []
-
-    try:
-        user = load_user_config(request)
-    except ValueError:
-        return []
-
     if not user:
         return []
 
-    data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
+    data = load_user_data(user)
 
     # This duplicates Week A for use in the /search route, if this isn't here,
     # it won't work for if it's the end of the week
@@ -453,6 +414,7 @@ def search():
     #del extra_week
 
     return results
+"""
 @app.route('/reminders/add')
 def add_reminder():
     if not cookies_present(request):
@@ -487,7 +449,7 @@ def get_reminders():
         return [{'name': 'Error, no cookies present!', 'due': '2085'}]
 
     data = load_user_data(user, request.cookies.get('private_key'), request.cookies.get('secret_key'))
-
+"""
 #################################################################################################
 # Main Program / Loop
 
