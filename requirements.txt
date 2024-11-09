@@ -8,3 +8,4 @@ Werkzeug~=3.0.1
 requests
 ics
 pytz
+flask-login
