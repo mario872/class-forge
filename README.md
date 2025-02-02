@@ -1,6 +1,6 @@
 # Basically an archive
 While I haven't archived this in case I decide to come back to it at a later point, there is currently no plan for further development of this project.
-Because I don't want to repeat myself, read the (slightly) more information at jimmyscompany.top
+Because I don't want to repeat myself, read the (slightly) more information at [jimmyscompany.top](Jimmys Company)
 
 # class-forge
 This website aims to make Sentral look prettier, by completely scrapping the old look, and remaking it grid by grid, and div by div.
