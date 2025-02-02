@@ -1,5 +1,5 @@
 # Basically an archive
-While I haven't archived this in case I decide to come back to it at a later point, there is currently no plan for further development of this project.
+While I haven't officialy archived this in case I decide to come back to it at a later point, there is currently no plan for further development of this project.
 Because I don't want to repeat myself, for slightly more information read the notice at [Jimmys Company](https://jimmyscompany.top)
 
 # class-forge
