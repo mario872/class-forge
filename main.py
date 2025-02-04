@@ -26,6 +26,7 @@ import ics
 import pytz
 import zlib
 from functools import wraps
+from json import JSONDecodeError
 
 from functions import *
 
@@ -34,35 +35,11 @@ from functions import *
 
 users = []  # THIS IS THE VARIABLE FOR ALL USERS SAVED IN CODE, SO NOT AVAILABLE UPON RESTART
 
-headless = False
-in_docker = os.environ.get('IN_DOCKER', False)  # Detects if we are testing, or in a production docker container
-override = False  # Whether to override to test the production version
-skip_login_check = os.environ.get('DISABLE_SECURITY', False) # Skip checking login for offline testing
-
-auto_off = 600  # Whether to automatically turn off the server after a certain period of time, currently 10 minutes (600)
-
-if in_docker or override:
-    auto_off = None
-    headless = True
-
-if auto_off != None:
-    auto_off_timer = threading.Timer(auto_off, lambda: os._exit(1))
-    auto_off_timer.daemon = True
-    auto_off_timer.start()
-
-if override:
-    in_docker = True
-
 timezone_hours_ahead = 10
 
 login_manager = LoginManager()
 
 # A template user to use, when the user is not signed in, used on login screen, tos, etc.
-fake_user = {'username': 'your.name',
-             'password': 'your_password',
-             'state': 'nsw',
-             'base_url': 'caringbahhs',
-             'photo_path': 'static/Rick Astley.jpg'}
 
 app = Flask(__name__)
 
@@ -116,10 +93,32 @@ def one():
 
 @app.route('/login')
 def login():
+    global skip_login_check
+    
     try:
         message = request.args.get('message')
     except KeyError:
         message = ''
+        
+    if skip_login_check:
+        username = os.environ.get('CF_USERNAME')
+        password = os.environ.get('CF_PASSWORD')
+        state = os.environ.get('CF_STATE')
+        base_url = os.environ.get('CF_BASE_URL')
+        
+        if not username or not password or not state or not base_url:
+            print("COULD NOT GET USER DETAILS FOR OFFLINE TESTING.\nMAKE SURE TO SET THE ENVIRONMENT VARIABLES 'CF_USERNAME', 'CF_PASSWORD', 'CF_STATE', AND 'CF_BASE_URL")
+            skip_login_check = False
+        else:
+            user = User(username, password, state, base_url)
+            user_dict = user_to_dict(user)
+            users.append(user_dict)
+            login_user(user, remember=True)
+            
+            with open(f'users/{zlib.adler32(user.username.encode())}.json', 'w') as f:
+                    f.write('')
+        
+        return redirect("/dashboard")
 
     return render_template('login.jinja', user=fake_user, message=message, weather=get_weather())
 
@@ -175,6 +174,10 @@ def home():
         data = load_user_data(user)
     except AttributeError:
         return redirect('/login')
+    except JSONDecodeError:
+        user = current_user
+        repeat_reload(user=user, http_request=request)
+        data = load_user_data(user)
 
     three_day_timetable = []
     if not datetime.now().weekday() in [0, 4, 5, 6]:

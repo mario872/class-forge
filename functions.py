@@ -37,7 +37,30 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import json
 import zlib
 
-from main import in_docker, headless, fake_user  # Risky move, but imports variables from main
+headless = False
+in_docker = os.environ.get('IN_DOCKER', False)  # Detects if we are testing, or in a production docker container
+override = False  # Whether to override to test the production version
+skip_login_check = os.environ.get('DISABLE_SECURITY', False) # Skip checking login for offline testing
+
+auto_off = 600  # Whether to automatically turn off the server after a certain period of time, currently 10 minutes (600)
+
+if in_docker or override:
+    auto_off = None
+    headless = True
+
+if auto_off != None:
+    auto_off_timer = threading.Timer(auto_off, lambda: os._exit(1))
+    auto_off_timer.daemon = True
+    auto_off_timer.start()
+
+if override:
+    in_docker = True
+
+fake_user = {'username': 'your.name',
+             'password': 'your_password',
+             'state': 'nsw',
+             'base_url': 'caringbahhs',
+             'photo_path': 'static/Rick Astley.jpg'}
 
 timers = {}
 
