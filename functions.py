@@ -85,12 +85,17 @@ def load_user_data(user, request=None):
         dict: The user data, e.g. the timetable, notices, calendar etc.
     """
 
+    if type(user) != str:
+        username = user.username
+    else:
+        username = user
+    
     try:
-        open(f'users/{zlib.adler32(user.username.encode())}.json', 'rb').close()
+        open(f'users/{zlib.adler32(username.encode())}.json', 'rb').close()
     except FileNotFoundError:
         repeat_reload(user)
 
-    with open(f'users/{zlib.adler32(user.username.encode())}.json', 'r') as data_json:
+    with open(f'users/{zlib.adler32(username.encode())}.json', 'r') as data_json:
         data = json.load(data_json)
 
     for day in data['timetable']:

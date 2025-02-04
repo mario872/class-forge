@@ -178,6 +178,15 @@ def home():
         user = current_user
         repeat_reload(user=user, http_request=request)
         data = load_user_data(user)
+        
+    try:
+        ics_timetable = data['ics']
+        ics_timetable = ics_timetable.split('\n')
+    except AttributeError:
+        repeat_reload(user=user, http_request=request)
+        data = load_user_data(user)
+        ics_timetable = data['ics']
+        ics_timetable = ics_timetable.split('\n')
 
     three_day_timetable = []
     if not datetime.now().weekday() in [0, 4, 5, 6]:
@@ -199,7 +208,10 @@ def home():
 
     try:
         tmp = timers[user.username]
-        message = request.args.get('message')
+        if not skip_login_check:
+            message = request.args.get('message') # I forget what this is for, it's probably related to the automatic reloading feature
+        else:
+            message = "Security has been disabled on this instance of class forge, please contact the owner and let them know!"
     except KeyError:
         message = 'Automatic reloading is not enabled, please press the fetch timetable button.'
 
@@ -229,9 +241,7 @@ def home():
                     events_today.append(event)
 
     # Most of the code below is from another GitHub repository I made: https://github.com/mario872/Period-Left-Counter
-    ics_timetable = data['ics']
-    ics_timetable = ics_timetable.split('\n')
-
+    
     ics_timetable.pop(1)  # This gets rid of annoying formatting errors in the ICS timetable from Sentral
     ics_timetable.pop(2)
 
@@ -349,8 +359,10 @@ def reload():
     user = current_user
 
     repeat_reload(user=user, http_request=request)
-
-    return redirect('/dashboard?message=Warning%20lots%20of%20features%20are%20still%20broken%20and%20may%20not%20be%20fixed%20anytime%20soon')
+    if not skip_login_check:
+        return redirect('/dashboard?message=Warning%20lots%20of%20features%20are%20still%20broken%20and%20may%20not%20be%20fixed%20anytime%20soon')
+    else:
+        return redirect('/dashboard?message=Warning%20security%20has%20been%20disabled%20for%20this%20instance%20of%20class%20forge%20tell%20the%owner%20if%20they%20do%20not%20know')
 
 
 @app.route('/privacy_policy')
@@ -369,6 +381,15 @@ def how_it_works():
 
 #################################################################################################
 # API Methods
+
+@app.route("/get_data", methods=["GET"])
+def get_data():
+    if skip_login_check:
+        data = load_user_data(os.environ.get('CF_USERNAME'))
+    else:
+        user = current_user
+        data = load_user_data(user)
+    return data
 
 @app.route('/search')
 @login_required
